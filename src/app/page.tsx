@@ -1,101 +1,54 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+const quickLinks = [
+  { href: "/inbox", label: "收件箱", desc: "管理待处理条目", color: "border-l-blue-500" },
+  { href: "/tasks", label: "任务板", desc: "查看进行中的任务", color: "border-l-orange-500" },
+  { href: "/tools", label: "工具箱", desc: "浏览工具集", color: "border-l-green-500" },
+  { href: "/methods", label: "方法库", desc: "查阅工作方法", color: "border-l-purple-500" },
+  { href: "/analytics", label: "数据中心", desc: "查看量化指标", color: "border-l-red-500" },
+];
+
+export default function DashboardPage() {
+  const { data: stats } = useQuery({
+    queryKey: ["dashboard"],
+    queryFn: async () => {
+      const [inbox, tasks] = await Promise.all([
+        fetch("/api/inbox?status=pending").then((r) => r.json()),
+        fetch("/api/tasks?status=todo").then((r) => r.json()),
+      ]);
+      return { pendingInbox: inbox.length, todoTasks: tasks.length };
+    },
+    refetchInterval: 30000,
+  });
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div>
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">待处理收件箱</CardTitle></CardHeader>
+          <CardContent><p className="text-3xl font-bold">{stats?.pendingInbox ?? "-"}</p></CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">待办任务</CardTitle></CardHeader>
+          <CardContent><p className="text-3xl font-bold">{stats?.todoTasks ?? "-"}</p></CardContent>
+        </Card>
+      </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      <h2 className="text-sm font-semibold text-muted-foreground mb-3">快捷入口</h2>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        {quickLinks.map((link) => (
+          <Link key={link.href} href={link.href}>
+            <Card className={`border-l-4 ${link.color} hover:shadow-sm transition-shadow cursor-pointer h-full`}>
+              <CardHeader className="p-3 pb-1"><CardTitle className="text-sm">{link.label}</CardTitle></CardHeader>
+              <CardContent className="p-3 pt-0"><p className="text-xs text-muted-foreground">{link.desc}</p></CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
