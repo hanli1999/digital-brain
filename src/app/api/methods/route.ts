@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const items = await prisma.method.findMany({
     orderBy: { createdAt: "desc" },
     take: 100,

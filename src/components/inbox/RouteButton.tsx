@@ -34,7 +34,7 @@ export function RouteButton({ inboxId }: { inboxId: string }) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger>
         <Button variant="outline" size="sm" disabled={mutation.isPending}>
           {mutation.isPending ? "入库中..." : "入库 →"}
         </Button>

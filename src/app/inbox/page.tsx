@@ -91,7 +91,7 @@ export default function InboxPage() {
       <div className="flex items-center justify-between mb-4">
         <FilterPanel tags={allTags} activeTag={activeTag} onTagChange={setActiveTag} />
         <Dialog open={showNewItem} onOpenChange={setShowNewItem}>
-          <DialogTrigger asChild>
+          <DialogTrigger>
             <Button size="sm">+ 新建条目</Button>
           </DialogTrigger>
           <DialogContent>

@@ -79,7 +79,7 @@ export default function TasksPage() {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-sm text-muted-foreground">{tasks.length} 个任务</h2>
         <Dialog open={showNew} onOpenChange={setShowNew}>
-          <DialogTrigger asChild>
+          <DialogTrigger>
             <Button size="sm">+ 新建任务</Button>
           </DialogTrigger>
           <DialogContent>
