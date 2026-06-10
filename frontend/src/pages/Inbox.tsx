@@ -114,13 +114,13 @@ export default function InboxPage() {
   return (
     <div>
       {/* Natural Language Input */}
-      <div className="mb-4 p-3 border rounded-lg bg-muted/30">
+      <div className="mb-4 p-4 border border-primary/10 rounded-xl bg-linear-to-b from-card to-primary/3">
         <div className="flex gap-2">
           <Textarea
             placeholder="直接输入... 比如：'今天看到一个不错的AI视频剪辑工具，叫剪映专业版，支持自动字幕和多轨道编辑'"
             value={nlInput}
             onChange={(e) => { setNlInput(e.target.value); setParsed(null); }}
-            className="min-h-[48px] text-sm"
+            className="min-h-[48px] text-sm border-primary/10 focus-visible:ring-primary/30"
             rows={2}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleParse(); } }}
           />
@@ -128,7 +128,7 @@ export default function InboxPage() {
             size="sm"
             onClick={handleParse}
             disabled={parsing || !nlInput.trim()}
-            className="shrink-0"
+            className="shrink-0 shadow-[0_0_12px_var(--primary)]/20"
           >
             {parsing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
             <span className="ml-1">{parsing ? "解析中..." : "AI 解析"}</span>
@@ -136,26 +136,26 @@ export default function InboxPage() {
         </div>
 
         {parsed && (
-          <div className="mt-3 p-3 border rounded-md bg-background space-y-2 text-sm">
+          <div className="mt-3 p-4 border border-primary/10 rounded-xl bg-card space-y-2 text-sm shadow-[0_2px_12px_rgba(0,0,0,0.2)]">
             <div className="flex items-center justify-between">
-              <span className="font-semibold text-base">{parsed.title}</span>
+              <span className="font-semibold text-base text-foreground">{parsed.title}</span>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">分类：{parsed.category}</span>
-                <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">权重 10</span>
+                <span className="text-xs bg-primary/15 text-primary px-1.5 py-0.5 rounded-full font-medium border border-primary/20">权重 10</span>
               </div>
             </div>
             <p className="text-muted-foreground leading-relaxed">{parsed.abstract}</p>
             <div className="flex items-center gap-2 flex-wrap">
               {parsed.tags.map((t) => (
-                <span key={t} className="text-xs bg-muted px-2 py-0.5 rounded-full">{t}</span>
+                <span key={t} className="text-xs bg-muted px-2 py-0.5 rounded-full border border-border/50">{t}</span>
               ))}
               <span className="text-xs text-muted-foreground">|</span>
-              <span className="text-xs">心情：{parsed.mood}</span>
-              <span className="text-xs">→ 归库：{parsed.routeTarget}</span>
+              <span className="text-xs text-muted-foreground">心情：{parsed.mood}</span>
+              <span className="text-xs text-muted-foreground">→ 归库：{parsed.routeTarget}</span>
             </div>
-            <p className="text-xs text-blue-600 dark:text-blue-400">{parsed.suggestion}</p>
+            <p className="text-xs text-accent-foreground/80">{parsed.suggestion}</p>
             <div className="flex gap-2 pt-1">
-              <Button size="sm" onClick={handleConfirmParsed} disabled={createMutation.isPending}>
+              <Button size="sm" onClick={handleConfirmParsed} disabled={createMutation.isPending} className="shadow-[0_0_12px_var(--primary)]/20">
                 {createMutation.isPending ? "加入中..." : "确认入库"}
               </Button>
               <Button size="sm" variant="ghost" onClick={() => setParsed(null)}>重新输入</Button>
@@ -203,21 +203,21 @@ export default function InboxPage() {
           {filteredItems.map((item) => (
             <Card
               key={item.id}
-              className="cursor-pointer hover:shadow-sm transition-shadow"
+              className="cursor-pointer hover:shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:border-primary/20 transition-all duration-200 border-border/50 bg-linear-to-b from-card to-card/95 group"
               onClick={() => setSelectedId(item.id)}
             >
               <CardContent className="p-4 space-y-2">
                 <div className="flex items-start justify-between">
-                  <span className="font-medium text-sm line-clamp-2">{item.title}</span>
+                  <span className="font-medium text-sm line-clamp-2 group-hover:text-foreground transition-colors">{item.title}</span>
                   <StatusBadge status={item.status} />
                 </div>
-                <p className="text-xs text-muted-foreground line-clamp-3">{item.content}</p>
+                <p className="text-xs text-muted-foreground/80 line-clamp-3 leading-relaxed">{item.content}</p>
                 <div className="flex items-center gap-2 flex-wrap">
                   {(() => { try { return (JSON.parse(item.tags) as string[]).slice(0, 3); } catch { return []; } })().map((t: string) => (
-                    <span key={t} className="text-xs bg-muted px-1.5 py-0.5 rounded-full">{t}</span>
+                    <span key={t} className="text-xs bg-muted/80 px-1.5 py-0.5 rounded-full border border-border/30">{t}</span>
                   ))}
                 </div>
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <div className="flex items-center justify-between text-xs text-muted-foreground/60">
                   <span>{item.source === "manual" ? "手动" : item.source === "feishu-bot" ? "飞书机器人" : "飞书导入"}</span>
                   <span>{new Date(item.createdAt).toLocaleDateString("zh-CN")}</span>
                 </div>

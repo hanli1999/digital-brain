@@ -28,8 +28,8 @@ export function HeaderBar() {
   const title = pageTitles[pathname] || "";
 
   return (
-    <header className="h-14 border-b flex items-center justify-between px-6 fixed top-0 left-56 right-0 bg-background z-10">
-      <h1 className="text-sm font-semibold text-muted-foreground">{title}</h1>
+    <header className="h-14 border-b border-sidebar-border/60 flex items-center justify-between px-6 fixed top-0 left-56 right-0 bg-background/95 backdrop-blur-sm z-10">
+      <h1 className="text-sm font-semibold text-muted-foreground tracking-wide">{title}</h1>
       <div className="flex items-center gap-4">
         <form
           onSubmit={(e) => {
@@ -42,12 +42,12 @@ export function HeaderBar() {
             name="q"
             type="search"
             placeholder="搜索..."
-            className="w-48 h-8 text-xs"
+            className="w-48 h-8 text-xs border-primary/10 focus-visible:ring-primary/30 bg-muted/50"
           />
         </form>
         <SyncIndicator />
-        <span className="text-xs text-muted-foreground">{user?.username}</span>
-        <Button variant="ghost" size="sm" className="text-xs" onClick={logout}>退出</Button>
+        <span className="text-xs text-muted-foreground/70">{user?.username}</span>
+        <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-foreground" onClick={logout}>退出</Button>
       </div>
     </header>
   );
