@@ -103,8 +103,11 @@ app.post("/:id/route", async (c) => {
       break;
     }
     case "calendar": {
+      const tomorrow9am = new Date();
+      tomorrow9am.setDate(tomorrow9am.getDate() + 1);
+      tomorrow9am.setHours(9, 0, 0, 0);
       const event = await prisma.calendarEvent.create({
-        data: { title: inboxItem.title, description: inboxItem.content, startTime: new Date() },
+        data: { title: inboxItem.title, description: inboxItem.content, startTime: tomorrow9am },
       });
       routedId = event.id;
       break;
@@ -117,8 +120,9 @@ app.post("/:id/route", async (c) => {
       break;
     }
     case "resources": {
+      const name = inboxItem.title || "未命名";
       const resource = await prisma.metric.create({
-        data: { name: inboxItem.title, value: 0, unit: "", category: "" },
+        data: { name, value: 0, unit: "", category: inboxItem.tags || "" },
       });
       routedId = resource.id;
       break;
@@ -126,6 +130,12 @@ app.post("/:id/route", async (c) => {
     default:
       return c.json({ error: `Unknown target: ${target}` }, 400);
   }
+
+  await prisma.searchIndex.upsert({
+    where: { entityType_entityId: { entityType: target, entityId: routedId } },
+    create: { entityType: target, entityId: routedId, title: inboxItem.title, content: inboxItem.content, tags: inboxItem.tags },
+    update: { title: inboxItem.title, content: inboxItem.content, tags: inboxItem.tags },
+  });
 
   const updated = await prisma.inboxItem.update({
     where: { id: c.req.param("id") },
