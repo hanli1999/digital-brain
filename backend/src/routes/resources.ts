@@ -5,14 +5,14 @@ import { syncAfterCreate, syncAfterUpdate, syncAfterDelete } from "../lib/feishu
 const app = new Hono();
 
 app.get("/", async (c) => {
-  const items = await prisma.metric.findMany({ orderBy: { timestamp: "desc" }, take: 200 });
+  const items = await prisma.metric.findMany({ orderBy: { createdAt: "desc" }, take: 200 });
   return c.json(items);
 });
 
 app.post("/", async (c) => {
   const body = await c.req.json();
   const item = await prisma.metric.create({
-    data: { name: body.name, value: body.value || 0, unit: body.unit || "", category: body.category || "", timestamp: body.timestamp ? new Date(body.timestamp) : new Date() },
+    data: { name: body.name, value: body.value || 0, unit: body.unit || "", category: body.category || "" },
   });
   const feishuId = await syncAfterCreate("library", item.id, body, async (fid) => {
     await prisma.metric.update({ where: { id: item.id }, data: { feishuId: fid } });

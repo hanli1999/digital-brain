@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { prisma } from "../lib/prisma.js";
+import { syncAfterCreate, syncAfterUpdate, syncAfterDelete } from "../lib/feishu-sync.js";
 
 const app = new Hono();
 
@@ -27,7 +28,10 @@ app.post("/", async (c) => {
     create: { entityType: "inbox", entityId: item.id, title: item.title, content: item.content, tags: item.tags },
     update: { title: item.title, content: item.content, tags: item.tags },
   });
-  return c.json(item, 201);
+  const feishuId = await syncAfterCreate("inbox", item.id, body, async (fid) => {
+    await prisma.inboxItem.update({ where: { id: item.id }, data: { feishuId: fid } });
+  });
+  return c.json({ ...item, feishuId }, 201);
 });
 
 app.get("/:id", async (c) => {
@@ -38,15 +42,21 @@ app.get("/:id", async (c) => {
 
 app.put("/:id", async (c) => {
   const body = await c.req.json();
+  const id = c.req.param("id");
+  const existing = await prisma.inboxItem.findUnique({ where: { id } });
   const item = await prisma.inboxItem.update({
-    where: { id: c.req.param("id") },
+    where: { id },
     data: { title: body.title, content: body.content, tags: body.tags, status: body.status },
   });
+  await syncAfterUpdate("inbox", existing?.feishuId ?? null, body);
   return c.json(item);
 });
 
 app.delete("/:id", async (c) => {
-  await prisma.inboxItem.delete({ where: { id: c.req.param("id") } });
+  const id = c.req.param("id");
+  const existing = await prisma.inboxItem.findUnique({ where: { id } });
+  await prisma.inboxItem.delete({ where: { id } });
+  await syncAfterDelete("inbox", existing?.feishuId ?? null);
   return c.json({ ok: true });
 });
 
@@ -98,6 +108,13 @@ app.post("/:id/route", async (c) => {
         data: { name: inboxItem.title, content: inboxItem.content },
       });
       routedId = mech.id;
+      break;
+    }
+    case "resources": {
+      const resource = await prisma.metric.create({
+        data: { name: inboxItem.title, value: 0, unit: "", category: "" },
+      });
+      routedId = resource.id;
       break;
     }
     default:

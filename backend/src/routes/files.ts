@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { prisma } from "../lib/prisma.js";
+import { syncAfterCreate, syncAfterUpdate, syncAfterDelete } from "../lib/feishu-sync.js";
 
 const app = new Hono();
 
@@ -13,7 +14,10 @@ app.post("/", async (c) => {
   const item = await prisma.fileAsset.create({
     data: { filename: body.filename, url: body.url || "", mimeType: body.mimeType || "application/octet-stream", size: body.size || 0, tags: body.tags || "[]" },
   });
-  return c.json(item, 201);
+  const feishuId = await syncAfterCreate("file", item.id, body, async (fid) => {
+    await prisma.fileAsset.update({ where: { id: item.id }, data: { feishuId: fid } });
+  });
+  return c.json({ ...item, feishuId }, 201);
 });
 
 app.get("/:id", async (c) => {
@@ -24,15 +28,21 @@ app.get("/:id", async (c) => {
 
 app.put("/:id", async (c) => {
   const body = await c.req.json();
+  const id = c.req.param("id");
+  const existing = await prisma.fileAsset.findUnique({ where: { id } });
   const item = await prisma.fileAsset.update({
-    where: { id: c.req.param("id") },
+    where: { id },
     data: { filename: body.filename, url: body.url, tags: body.tags },
   });
+  await syncAfterUpdate("file", existing?.feishuId ?? null, body);
   return c.json(item);
 });
 
 app.delete("/:id", async (c) => {
-  await prisma.fileAsset.delete({ where: { id: c.req.param("id") } });
+  const id = c.req.param("id");
+  const existing = await prisma.fileAsset.findUnique({ where: { id } });
+  await prisma.fileAsset.delete({ where: { id } });
+  await syncAfterDelete("file", existing?.feishuId ?? null);
   return c.json({ ok: true });
 });
 

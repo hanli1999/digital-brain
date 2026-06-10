@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { prisma } from "../lib/prisma.js";
+import { syncAfterCreate, syncAfterUpdate, syncAfterDelete } from "../lib/feishu-sync.js";
 
 const app = new Hono();
 
@@ -18,7 +19,10 @@ app.post("/", async (c) => {
     create: { entityType: "ai_mechanism", entityId: item.id, title: item.name, content: item.content },
     update: { title: item.name, content: item.content },
   });
-  return c.json(item, 201);
+  const feishuId = await syncAfterCreate("ai_mechanism", item.id, body, async (fid) => {
+    await prisma.aiMechanism.update({ where: { id: item.id }, data: { feishuId: fid } });
+  });
+  return c.json({ ...item, feishuId }, 201);
 });
 
 app.get("/:id", async (c) => {
@@ -29,15 +33,21 @@ app.get("/:id", async (c) => {
 
 app.put("/:id", async (c) => {
   const body = await c.req.json();
+  const id = c.req.param("id");
+  const existing = await prisma.aiMechanism.findUnique({ where: { id } });
   const item = await prisma.aiMechanism.update({
-    where: { id: c.req.param("id") },
+    where: { id },
     data: { name: body.name, type: body.type, content: body.content, parameters: body.parameters },
   });
+  await syncAfterUpdate("ai_mechanism", existing?.feishuId ?? null, body);
   return c.json(item);
 });
 
 app.delete("/:id", async (c) => {
-  await prisma.aiMechanism.delete({ where: { id: c.req.param("id") } });
+  const id = c.req.param("id");
+  const existing = await prisma.aiMechanism.findUnique({ where: { id } });
+  await prisma.aiMechanism.delete({ where: { id } });
+  await syncAfterDelete("ai_mechanism", existing?.feishuId ?? null);
   return c.json({ ok: true });
 });
 
