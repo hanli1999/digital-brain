@@ -13,6 +13,7 @@ const CN_TO_EN: Record<string, string> = {
   "任务截止时间": "endTime",
   "是否为全天任务": "allDay",
   "所属项目ID": "projectId",
+  "创建时间": "createdAt",
 };
 
 function toFrontend(r: FeishuRecord) {

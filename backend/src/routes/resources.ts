@@ -10,6 +10,7 @@ const CN_TO_EN: Record<string, string> = {
   "当前存量": "stock",
   "资源状态": "status",
   "资源详情": "detail",
+  "创建时间": "createdAt",
 };
 
 function toFrontend(r: FeishuRecord) {

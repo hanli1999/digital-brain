@@ -14,6 +14,7 @@ const CN_TO_EN: Record<string, string> = {
   "重要度": "importance",
   "发表日期": "publishedAt",
   "原文片段": "snippet",
+  "创建时间": "createdAt",
 };
 
 function toFrontend(r: FeishuRecord) {

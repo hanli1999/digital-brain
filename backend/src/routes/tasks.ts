@@ -9,6 +9,7 @@ const CN_TO_EN: Record<string, string> = {
   "任务状态": "status",
   "转化行动": "action",
   "标签": "tags",
+  "创建时间": "createdAt",
 };
 
 function toFrontend(r: FeishuRecord) {

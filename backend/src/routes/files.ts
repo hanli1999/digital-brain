@@ -7,6 +7,7 @@ const CN_TO_EN: Record<string, string> = {
   "文本": "text",
   "时间": "date",
   "附件": "attachment",
+  "创建时间": "createdAt",
 };
 
 function toFrontend(r: FeishuRecord) {

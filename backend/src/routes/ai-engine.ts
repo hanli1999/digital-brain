@@ -13,6 +13,7 @@ const CN_TO_EN: Record<string, string> = {
   "适用场景": "scenarios",
   "详细适用场景": "scenariosDetail",
   "来源": "source",
+  "创建时间": "createdAt",
 };
 
 function toFrontend(r: FeishuRecord) {

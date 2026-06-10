@@ -16,6 +16,7 @@ const CN_TO_EN: Record<string, string> = {
   "来源(1)": "sourceUrl",
   "炼化结果": "aiSummary",
   "收集时间": "collectedAt",
+  "创建时间": "createdAt",
 };
 
 function toFrontend(r: FeishuRecord) {

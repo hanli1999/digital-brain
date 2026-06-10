@@ -11,6 +11,7 @@ const CN_TO_EN: Record<string, string> = {
   "祭炼口诀": "initScript",
   "威力评级": "rating",
   "法器记录": "record",
+  "创建时间": "createdAt",
 };
 
 function toFrontend(r: FeishuRecord) {

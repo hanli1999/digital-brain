@@ -11,6 +11,7 @@ const CN_TO_EN: Record<string, string> = {
   "领悟日期": "learnedDate",
   "存放位置": "storage",
   "推荐关联": "related",
+  "创建时间": "createdAt",
 };
 
 function toFrontend(r: FeishuRecord) {
