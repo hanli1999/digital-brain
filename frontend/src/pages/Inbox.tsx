@@ -163,13 +163,21 @@ export default function InboxPage() {
 
       <div className="flex items-center justify-between mb-4">
         <FilterPanel tags={allTags} activeTag={activeTag} onTagChange={setActiveTag} />
-        <div className="flex items-center gap-2">
-          <Button variant={viewMode === "table" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("table")}>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setViewMode("table")}
+            className={`inline-flex items-center justify-center h-7 w-7 rounded-md text-sm transition-colors ${viewMode === "table" ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground"}`}
+          >
             <List className="h-4 w-4" />
-          </Button>
-          <Button variant={viewMode === "card" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("card")}>
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("card")}
+            className={`inline-flex items-center justify-center h-7 w-7 rounded-md text-sm transition-colors ${viewMode === "card" ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground"}`}
+          >
             <LayoutGrid className="h-4 w-4" />
-          </Button>
+          </button>
           <Dialog open={showNewItem} onOpenChange={setShowNewItem}>
             <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/80 h-8 px-3 text-xs font-medium transition-all">+ 高级新建</DialogTrigger>
           <DialogContent>

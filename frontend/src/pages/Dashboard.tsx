@@ -4,6 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiFetch } from "@/config/api";
 import type { InboxItem, Task } from "@/types/api";
 
+const INTERNAL_TAGS = new Set([
+  "数字洞府", "使用说明书", "今日收件箱", "机缘录", "功法库", "法器阁", "丹房",
+  "AI字段", "炼化结果", "归位去处", "距今天数", "时间权重分",
+]);
+
 export default function Dashboard() {
   const { data: stats } = useQuery({
     queryKey: ["dashboard"],
@@ -21,7 +26,7 @@ export default function Dashboard() {
 
       const tagFreq: Record<string, number> = {};
       inbox.forEach((i) => {
-        try { (JSON.parse(i.tags) as string[]).forEach((t) => { tagFreq[t] = (tagFreq[t] || 0) + 1; }); } catch {}
+        try { (JSON.parse(i.tags) as string[]).filter((t) => !INTERNAL_TAGS.has(t)).forEach((t) => { tagFreq[t] = (tagFreq[t] || 0) + 1; }); } catch {}
       });
       const topTags = Object.entries(tagFreq)
         .sort(([, a], [, b]) => b - a)
