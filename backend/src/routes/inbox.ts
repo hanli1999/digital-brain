@@ -1,157 +1,106 @@
 import { Hono } from "hono";
-import { prisma } from "../lib/prisma.js";
-import { syncAfterCreate, syncAfterUpdate, syncAfterDelete } from "../lib/feishu-sync.js";
+import { listRecords, getRecord, createRecord, updateRecord, deleteRecord, type FeishuRecord } from "../lib/feishu.js";
+
+const TABLE = "tbl2pG26LdF3c3cX";
+
+const CN_TO_EN: Record<string, string> = {
+  "收集内容": "title",
+  "附件识别结果": "content",
+  "处理状态": "status",
+  "初步分类": "category",
+  "核心词": "tags",
+  "来源": "source",
+  "情绪色": "mood",
+  "归入建议": "routeTarget",
+  "归位去处": "routedTo",
+  "来源(1)": "sourceUrl",
+  "炼化结果": "aiSummary",
+  "收集时间": "collectedAt",
+};
+
+function toFrontend(r: FeishuRecord) {
+  const result: Record<string, unknown> = { id: r.record_id };
+  for (const [key, value] of Object.entries(r.fields)) {
+    result[CN_TO_EN[key] || key] = value;
+  }
+  return result;
+}
 
 const app = new Hono();
 
 app.get("/", async (c) => {
-  const status = c.req.query("status");
-  const where: Record<string, unknown> = {};
-  if (status) where.status = status;
-  const items = await prisma.inboxItem.findMany({ where, orderBy: { createdAt: "desc" }, take: 100 });
-  return c.json(items);
+  const records = await listRecords(TABLE);
+  return c.json(records.map(toFrontend));
 });
 
 app.post("/", async (c) => {
   const body = await c.req.json();
-  const item = await prisma.inboxItem.create({
-    data: {
-      title: body.title,
-      content: body.content || "",
-      source: body.source || "manual",
-      tags: body.tags || "[]",
-      imageUrls: body.imageUrls || "[]",
-    },
-  });
-  await prisma.searchIndex.upsert({
-    where: { entityType_entityId: { entityType: "inbox", entityId: item.id } },
-    create: { entityType: "inbox", entityId: item.id, title: item.title, content: item.content, tags: item.tags },
-    update: { title: item.title, content: item.content, tags: item.tags },
-  });
-  const feishuId = await syncAfterCreate("inbox", item.id, body, async (fid) => {
-    await prisma.inboxItem.update({ where: { id: item.id }, data: { feishuId: fid } });
-  });
-  return c.json({ ...item, feishuId }, 201);
+  const fields: Record<string, unknown> = {};
+  if (body.title) fields["收集内容"] = body.title;
+  if (body.content) fields["附件识别结果"] = body.content;
+  if (body.status) fields["处理状态"] = body.status;
+  if (body.category) fields["初步分类"] = body.category;
+  if (body.tags) fields["核心词"] = body.tags;
+  if (body.source) fields["来源"] = body.source;
+  if (body.mood) fields["情绪色"] = body.mood;
+  if (body.routeTarget) fields["归入建议"] = body.routeTarget;
+  if (body.routedTo) fields["归位去处"] = body.routedTo;
+  if (body.sourceUrl) fields["来源(1)"] = body.sourceUrl;
+  if (body.aiSummary) fields["炼化结果"] = body.aiSummary;
+  if (body.collectedAt) fields["收集时间"] = body.collectedAt;
+
+  const record = await createRecord(TABLE, fields);
+  if (!record) return c.json({ error: "Failed to create" }, 500);
+  return c.json(toFrontend(record), 201);
 });
 
 app.get("/:id", async (c) => {
-  const item = await prisma.inboxItem.findUnique({ where: { id: c.req.param("id") } });
-  if (!item) return c.json({ error: "Not found" }, 404);
-  return c.json(item);
+  const record = await getRecord(TABLE, c.req.param("id"));
+  if (!record) return c.json({ error: "Not found" }, 404);
+  return c.json(toFrontend(record));
 });
 
 app.put("/:id", async (c) => {
   const body = await c.req.json();
-  const id = c.req.param("id");
-  const existing = await prisma.inboxItem.findUnique({ where: { id } });
-  const item = await prisma.inboxItem.update({
-    where: { id },
-    data: { title: body.title, content: body.content, tags: body.tags, status: body.status },
-  });
-  await syncAfterUpdate("inbox", existing?.feishuId ?? null, body);
-  await prisma.searchIndex.upsert({
-    where: { entityType_entityId: { entityType: "inbox", entityId: id } },
-    create: { entityType: "inbox", entityId: id, title: item.title, content: item.content, tags: item.tags },
-    update: { title: item.title, content: item.content, tags: item.tags },
-  });
-  return c.json(item);
+  const fields: Record<string, unknown> = {};
+  if (body.title !== undefined) fields["收集内容"] = body.title;
+  if (body.content !== undefined) fields["附件识别结果"] = body.content;
+  if (body.status !== undefined) fields["处理状态"] = body.status;
+  if (body.category !== undefined) fields["初步分类"] = body.category;
+  if (body.tags !== undefined) fields["核心词"] = body.tags;
+  if (body.source !== undefined) fields["来源"] = body.source;
+  if (body.mood !== undefined) fields["情绪色"] = body.mood;
+  if (body.routeTarget !== undefined) fields["归入建议"] = body.routeTarget;
+  if (body.routedTo !== undefined) fields["归位去处"] = body.routedTo;
+  if (body.sourceUrl !== undefined) fields["来源(1)"] = body.sourceUrl;
+  if (body.aiSummary !== undefined) fields["炼化结果"] = body.aiSummary;
+  if (body.collectedAt !== undefined) fields["收集时间"] = body.collectedAt;
+
+  const record = await updateRecord(TABLE, c.req.param("id"), fields);
+  if (!record) return c.json({ error: "Update failed" }, 500);
+  return c.json(toFrontend(record));
 });
 
 app.delete("/:id", async (c) => {
-  const id = c.req.param("id");
-  const existing = await prisma.inboxItem.findUnique({ where: { id } });
-  await prisma.inboxItem.delete({ where: { id } });
-  await prisma.searchIndex.deleteMany({ where: { entityType: "inbox", entityId: id } });
-  await syncAfterDelete("inbox", existing?.feishuId ?? null);
+  const ok = await deleteRecord(TABLE, c.req.param("id"));
+  if (!ok) return c.json({ error: "Delete failed" }, 500);
   return c.json({ ok: true });
 });
 
 app.post("/:id/route", async (c) => {
   const body = await c.req.json();
   const target = body.routeTarget as string;
-  const inboxItem = await prisma.inboxItem.findUnique({ where: { id: c.req.param("id") } });
-  if (!inboxItem) return c.json({ error: "Not found" }, 404);
+  if (!target) return c.json({ error: "Missing routeTarget" }, 400);
 
-  let routedId = "";
-  switch (target) {
-    case "task": {
-      const task = await prisma.task.create({
-        data: { title: inboxItem.title, description: inboxItem.content, tags: inboxItem.tags },
-      });
-      routedId = task.id;
-      break;
-    }
-    case "tool": {
-      const tool = await prisma.tool.create({
-        data: { name: inboxItem.title, description: inboxItem.content, tags: inboxItem.tags },
-      });
-      routedId = tool.id;
-      break;
-    }
-    case "method": {
-      const method = await prisma.method.create({
-        data: { title: inboxItem.title, content: inboxItem.content, tags: inboxItem.tags },
-      });
-      routedId = method.id;
-      break;
-    }
-    case "library": {
-      const doc = await prisma.document.create({
-        data: { title: inboxItem.title, abstract: inboxItem.content, tags: inboxItem.tags },
-      });
-      routedId = doc.id;
-      break;
-    }
-    case "calendar": {
-      const tomorrow9am = new Date();
-      tomorrow9am.setDate(tomorrow9am.getDate() + 1);
-      tomorrow9am.setHours(9, 0, 0, 0);
-      const event = await prisma.calendarEvent.create({
-        data: { title: inboxItem.title, description: inboxItem.content, startTime: tomorrow9am },
-      });
-      routedId = event.id;
-      break;
-    }
-    case "ai-engine": {
-      const mech = await prisma.aiMechanism.create({
-        data: { name: inboxItem.title, content: inboxItem.content },
-      });
-      routedId = mech.id;
-      break;
-    }
-    case "resources": {
-      const name = inboxItem.title || "未命名";
-      const resource = await prisma.metric.create({
-        data: { name, value: 0, unit: "", category: inboxItem.tags || "" },
-      });
-      routedId = resource.id;
-      break;
-    }
-    default:
-      return c.json({ error: `Unknown target: ${target}` }, 400);
-  }
+  const fields: Record<string, unknown> = {
+    "归入建议": target,
+    "处理状态": "routed",
+    "归位去处": target,
+  };
 
-  await prisma.searchIndex.upsert({
-    where: { entityType_entityId: { entityType: target, entityId: routedId } },
-    create: { entityType: target, entityId: routedId, title: inboxItem.title, content: inboxItem.content, tags: inboxItem.tags },
-    update: { title: inboxItem.title, content: inboxItem.content, tags: inboxItem.tags },
-  });
-
-  const updated = await prisma.inboxItem.update({
-    where: { id: c.req.param("id") },
-    data: { status: "routed", routeTarget: target, routedTo: routedId },
-  });
-
-  await prisma.auditLog.create({
-    data: {
-      action: "route",
-      entity: "inbox",
-      entityId: c.req.param("id"),
-      detail: JSON.stringify({ from: "inbox", to: target, routedId }),
-    },
-  });
-
-  return c.json({ inbox: updated, routedId, target });
+  const record = await updateRecord(TABLE, c.req.param("id"), fields);
+  if (!record) return c.json({ error: "Route failed" }, 500);
+  return c.json({ inbox: toFrontend(record), routedId: target, target });
 });
 
 export default app;

@@ -1,62 +1,74 @@
 import { Hono } from "hono";
-import { prisma } from "../lib/prisma.js";
-import { syncAfterCreate, syncAfterUpdate, syncAfterDelete } from "../lib/feishu-sync.js";
+import { listRecords, getRecord, createRecord, updateRecord, deleteRecord, type FeishuRecord } from "../lib/feishu.js";
+
+const TABLE = "tbl5r4qZHGnFxUSC";
+
+const CN_TO_EN: Record<string, string> = {
+  "工具名称": "name",
+  "调用链接": "url",
+  "工具类型": "category",
+  "核心神通": "corePower",
+  "祭炼口诀": "initScript",
+  "威力评级": "rating",
+  "法器记录": "record",
+};
+
+function toFrontend(r: FeishuRecord) {
+  const result: Record<string, unknown> = { id: r.record_id };
+  for (const [key, value] of Object.entries(r.fields)) {
+    result[CN_TO_EN[key] || key] = value;
+  }
+  return result;
+}
 
 const app = new Hono();
 
 app.get("/", async (c) => {
-  const category = c.req.query("category");
-  const where: Record<string, unknown> = {};
-  if (category) where.category = category;
-  const items = await prisma.tool.findMany({ where, orderBy: { createdAt: "desc" }, take: 100 });
-  return c.json(items);
+  const records = await listRecords(TABLE);
+  return c.json(records.map(toFrontend));
 });
 
 app.post("/", async (c) => {
   const body = await c.req.json();
-  const item = await prisma.tool.create({
-    data: { name: body.name, description: body.description || "", category: body.category || "other", url: body.url || "", tags: body.tags || "[]" },
-  });
-  await prisma.searchIndex.upsert({
-    where: { entityType_entityId: { entityType: "tool", entityId: item.id } },
-    create: { entityType: "tool", entityId: item.id, title: item.name, content: item.description, tags: item.tags },
-    update: { title: item.name, content: item.description, tags: item.tags },
-  });
-  const feishuId = await syncAfterCreate("tool", item.id, body, async (fid) => {
-    await prisma.tool.update({ where: { id: item.id }, data: { feishuId: fid } });
-  });
-  return c.json({ ...item, feishuId }, 201);
+  const fields: Record<string, unknown> = {};
+  if (body.name) fields["工具名称"] = body.name;
+  if (body.url) fields["调用链接"] = body.url;
+  if (body.category) fields["工具类型"] = body.category;
+  if (body.corePower) fields["核心神通"] = body.corePower;
+  if (body.initScript) fields["祭炼口诀"] = body.initScript;
+  if (body.rating) fields["威力评级"] = body.rating;
+  if (body.record) fields["法器记录"] = body.record;
+
+  const record = await createRecord(TABLE, fields);
+  if (!record) return c.json({ error: "Failed to create" }, 500);
+  return c.json(toFrontend(record), 201);
 });
 
 app.get("/:id", async (c) => {
-  const item = await prisma.tool.findUnique({ where: { id: c.req.param("id") } });
-  if (!item) return c.json({ error: "Not found" }, 404);
-  return c.json(item);
+  const record = await getRecord(TABLE, c.req.param("id"));
+  if (!record) return c.json({ error: "Not found" }, 404);
+  return c.json(toFrontend(record));
 });
 
 app.put("/:id", async (c) => {
   const body = await c.req.json();
-  const id = c.req.param("id");
-  const existing = await prisma.tool.findUnique({ where: { id } });
-  const item = await prisma.tool.update({
-    where: { id },
-    data: { name: body.name, description: body.description, category: body.category, url: body.url, tags: body.tags },
-  });
-  await syncAfterUpdate("tool", existing?.feishuId ?? null, body);
-  await prisma.searchIndex.upsert({
-    where: { entityType_entityId: { entityType: "tool", entityId: id } },
-    create: { entityType: "tool", entityId: id, title: item.name, content: item.description, tags: item.tags },
-    update: { title: item.name, content: item.description, tags: item.tags },
-  });
-  return c.json(item);
+  const fields: Record<string, unknown> = {};
+  if (body.name !== undefined) fields["工具名称"] = body.name;
+  if (body.url !== undefined) fields["调用链接"] = body.url;
+  if (body.category !== undefined) fields["工具类型"] = body.category;
+  if (body.corePower !== undefined) fields["核心神通"] = body.corePower;
+  if (body.initScript !== undefined) fields["祭炼口诀"] = body.initScript;
+  if (body.rating !== undefined) fields["威力评级"] = body.rating;
+  if (body.record !== undefined) fields["法器记录"] = body.record;
+
+  const record = await updateRecord(TABLE, c.req.param("id"), fields);
+  if (!record) return c.json({ error: "Update failed" }, 500);
+  return c.json(toFrontend(record));
 });
 
 app.delete("/:id", async (c) => {
-  const id = c.req.param("id");
-  const existing = await prisma.tool.findUnique({ where: { id } });
-  await prisma.tool.delete({ where: { id } });
-  await prisma.searchIndex.deleteMany({ where: { entityType: "tool", entityId: id } });
-  await syncAfterDelete("tool", existing?.feishuId ?? null);
+  const ok = await deleteRecord(TABLE, c.req.param("id"));
+  if (!ok) return c.json({ error: "Delete failed" }, 500);
   return c.json({ ok: true });
 });
 

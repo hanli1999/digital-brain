@@ -1,59 +1,80 @@
 import { Hono } from "hono";
-import { prisma } from "../lib/prisma.js";
-import { syncAfterCreate, syncAfterUpdate, syncAfterDelete } from "../lib/feishu-sync.js";
+import { listRecords, getRecord, createRecord, updateRecord, deleteRecord, type FeishuRecord } from "../lib/feishu.js";
+
+const TABLE = "tblBgV1gLsh22qbV";
+
+const CN_TO_EN: Record<string, string> = {
+  "机制名称": "name",
+  "所属组件": "component",
+  "核心理念": "coreIdea",
+  "关键特征": "features",
+  "详细关键特征": "featuresDetail",
+  "实践示例": "examples",
+  "适用场景": "scenarios",
+  "详细适用场景": "scenariosDetail",
+  "来源": "source",
+};
+
+function toFrontend(r: FeishuRecord) {
+  const result: Record<string, unknown> = { id: r.record_id };
+  for (const [key, value] of Object.entries(r.fields)) {
+    result[CN_TO_EN[key] || key] = value;
+  }
+  return result;
+}
 
 const app = new Hono();
 
 app.get("/", async (c) => {
-  const items = await prisma.aiMechanism.findMany({ orderBy: { createdAt: "desc" }, take: 100 });
-  return c.json(items);
+  const records = await listRecords(TABLE);
+  return c.json(records.map(toFrontend));
 });
 
 app.post("/", async (c) => {
   const body = await c.req.json();
-  const item = await prisma.aiMechanism.create({
-    data: { name: body.name, type: body.type || "prompt", content: body.content || "", parameters: body.parameters || "{}" },
-  });
-  await prisma.searchIndex.upsert({
-    where: { entityType_entityId: { entityType: "ai_mechanism", entityId: item.id } },
-    create: { entityType: "ai_mechanism", entityId: item.id, title: item.name, content: item.content },
-    update: { title: item.name, content: item.content },
-  });
-  const feishuId = await syncAfterCreate("ai_mechanism", item.id, body, async (fid) => {
-    await prisma.aiMechanism.update({ where: { id: item.id }, data: { feishuId: fid } });
-  });
-  return c.json({ ...item, feishuId }, 201);
+  const fields: Record<string, unknown> = {};
+  if (body.name) fields["机制名称"] = body.name;
+  if (body.component) fields["所属组件"] = body.component;
+  if (body.coreIdea) fields["核心理念"] = body.coreIdea;
+  if (body.features) fields["关键特征"] = body.features;
+  if (body.featuresDetail) fields["详细关键特征"] = body.featuresDetail;
+  if (body.examples) fields["实践示例"] = body.examples;
+  if (body.scenarios) fields["适用场景"] = body.scenarios;
+  if (body.scenariosDetail) fields["详细适用场景"] = body.scenariosDetail;
+  if (body.source) fields["来源"] = body.source;
+
+  const record = await createRecord(TABLE, fields);
+  if (!record) return c.json({ error: "Failed to create" }, 500);
+  return c.json(toFrontend(record), 201);
 });
 
 app.get("/:id", async (c) => {
-  const item = await prisma.aiMechanism.findUnique({ where: { id: c.req.param("id") } });
-  if (!item) return c.json({ error: "Not found" }, 404);
-  return c.json(item);
+  const record = await getRecord(TABLE, c.req.param("id"));
+  if (!record) return c.json({ error: "Not found" }, 404);
+  return c.json(toFrontend(record));
 });
 
 app.put("/:id", async (c) => {
   const body = await c.req.json();
-  const id = c.req.param("id");
-  const existing = await prisma.aiMechanism.findUnique({ where: { id } });
-  const item = await prisma.aiMechanism.update({
-    where: { id },
-    data: { name: body.name, type: body.type, content: body.content, parameters: body.parameters },
-  });
-  await syncAfterUpdate("ai_mechanism", existing?.feishuId ?? null, body);
-  await prisma.searchIndex.upsert({
-    where: { entityType_entityId: { entityType: "ai_mechanism", entityId: id } },
-    create: { entityType: "ai_mechanism", entityId: id, title: item.name, content: item.content },
-    update: { title: item.name, content: item.content },
-  });
-  return c.json(item);
+  const fields: Record<string, unknown> = {};
+  if (body.name !== undefined) fields["机制名称"] = body.name;
+  if (body.component !== undefined) fields["所属组件"] = body.component;
+  if (body.coreIdea !== undefined) fields["核心理念"] = body.coreIdea;
+  if (body.features !== undefined) fields["关键特征"] = body.features;
+  if (body.featuresDetail !== undefined) fields["详细关键特征"] = body.featuresDetail;
+  if (body.examples !== undefined) fields["实践示例"] = body.examples;
+  if (body.scenarios !== undefined) fields["适用场景"] = body.scenarios;
+  if (body.scenariosDetail !== undefined) fields["详细适用场景"] = body.scenariosDetail;
+  if (body.source !== undefined) fields["来源"] = body.source;
+
+  const record = await updateRecord(TABLE, c.req.param("id"), fields);
+  if (!record) return c.json({ error: "Update failed" }, 500);
+  return c.json(toFrontend(record));
 });
 
 app.delete("/:id", async (c) => {
-  const id = c.req.param("id");
-  const existing = await prisma.aiMechanism.findUnique({ where: { id } });
-  await prisma.aiMechanism.delete({ where: { id } });
-  await prisma.searchIndex.deleteMany({ where: { entityType: "ai_mechanism", entityId: id } });
-  await syncAfterDelete("ai_mechanism", existing?.feishuId ?? null);
+  const ok = await deleteRecord(TABLE, c.req.param("id"));
+  if (!ok) return c.json({ error: "Delete failed" }, 500);
   return c.json({ ok: true });
 });
 

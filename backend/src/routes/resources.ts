@@ -1,59 +1,71 @@
 import { Hono } from "hono";
-import { prisma } from "../lib/prisma.js";
-import { syncAfterCreate, syncAfterUpdate, syncAfterDelete } from "../lib/feishu-sync.js";
+import { listRecords, getRecord, createRecord, updateRecord, deleteRecord, type FeishuRecord } from "../lib/feishu.js";
+
+const TABLE = "tbl6WHGWD9DKLuJ5";
+
+const CN_TO_EN: Record<string, string> = {
+  "资源名称": "name",
+  "获取链接": "url",
+  "资源类型": "type",
+  "当前存量": "stock",
+  "资源状态": "status",
+  "资源详情": "detail",
+};
+
+function toFrontend(r: FeishuRecord) {
+  const result: Record<string, unknown> = { id: r.record_id };
+  for (const [key, value] of Object.entries(r.fields)) {
+    result[CN_TO_EN[key] || key] = value;
+  }
+  return result;
+}
 
 const app = new Hono();
 
 app.get("/", async (c) => {
-  const items = await prisma.metric.findMany({ orderBy: { createdAt: "desc" }, take: 200 });
-  return c.json(items);
+  const records = await listRecords(TABLE);
+  return c.json(records.map(toFrontend));
 });
 
 app.post("/", async (c) => {
   const body = await c.req.json();
-  const item = await prisma.metric.create({
-    data: { name: body.name, value: body.value || 0, unit: body.unit || "", category: body.category || "" },
-  });
-  const feishuId = await syncAfterCreate("library", item.id, body, async (fid) => {
-    await prisma.metric.update({ where: { id: item.id }, data: { feishuId: fid } });
-  });
-  await prisma.searchIndex.upsert({
-    where: { entityType_entityId: { entityType: "resource", entityId: item.id } },
-    create: { entityType: "resource", entityId: item.id, title: item.name, content: item.category },
-    update: { title: item.name, content: item.category },
-  });
-  return c.json({ ...item, feishuId }, 201);
+  const fields: Record<string, unknown> = {};
+  if (body.name) fields["资源名称"] = body.name;
+  if (body.url) fields["获取链接"] = body.url;
+  if (body.type) fields["资源类型"] = body.type;
+  if (body.stock !== undefined) fields["当前存量"] = body.stock;
+  if (body.status) fields["资源状态"] = body.status;
+  if (body.detail) fields["资源详情"] = body.detail;
+
+  const record = await createRecord(TABLE, fields);
+  if (!record) return c.json({ error: "Failed to create" }, 500);
+  return c.json(toFrontend(record), 201);
 });
 
 app.get("/:id", async (c) => {
-  const item = await prisma.metric.findUnique({ where: { id: c.req.param("id") } });
-  if (!item) return c.json({ error: "Not found" }, 404);
-  return c.json(item);
+  const record = await getRecord(TABLE, c.req.param("id"));
+  if (!record) return c.json({ error: "Not found" }, 404);
+  return c.json(toFrontend(record));
 });
 
 app.put("/:id", async (c) => {
   const body = await c.req.json();
-  const id = c.req.param("id");
-  const existing = await prisma.metric.findUnique({ where: { id } });
-  const item = await prisma.metric.update({
-    where: { id },
-    data: { name: body.name, value: body.value, unit: body.unit, category: body.category },
-  });
-  await syncAfterUpdate("library", existing?.feishuId ?? null, body);
-  await prisma.searchIndex.upsert({
-    where: { entityType_entityId: { entityType: "resource", entityId: id } },
-    create: { entityType: "resource", entityId: id, title: item.name, content: item.category },
-    update: { title: item.name, content: item.category },
-  });
-  return c.json(item);
+  const fields: Record<string, unknown> = {};
+  if (body.name !== undefined) fields["资源名称"] = body.name;
+  if (body.url !== undefined) fields["获取链接"] = body.url;
+  if (body.type !== undefined) fields["资源类型"] = body.type;
+  if (body.stock !== undefined) fields["当前存量"] = body.stock;
+  if (body.status !== undefined) fields["资源状态"] = body.status;
+  if (body.detail !== undefined) fields["资源详情"] = body.detail;
+
+  const record = await updateRecord(TABLE, c.req.param("id"), fields);
+  if (!record) return c.json({ error: "Update failed" }, 500);
+  return c.json(toFrontend(record));
 });
 
 app.delete("/:id", async (c) => {
-  const id = c.req.param("id");
-  const existing = await prisma.metric.findUnique({ where: { id } });
-  await prisma.metric.delete({ where: { id } });
-  await prisma.searchIndex.deleteMany({ where: { entityType: "resource", entityId: id } });
-  await syncAfterDelete("library", existing?.feishuId ?? null);
+  const ok = await deleteRecord(TABLE, c.req.param("id"));
+  if (!ok) return c.json({ error: "Delete failed" }, 500);
   return c.json({ ok: true });
 });
 

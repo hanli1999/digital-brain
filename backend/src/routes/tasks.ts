@@ -1,62 +1,68 @@
 import { Hono } from "hono";
-import { prisma } from "../lib/prisma.js";
-import { syncAfterCreate, syncAfterUpdate, syncAfterDelete } from "../lib/feishu-sync.js";
+import { listRecords, getRecord, createRecord, updateRecord, deleteRecord, type FeishuRecord } from "../lib/feishu.js";
+
+const TABLE = "tblOyyByZYtZz7dA";
+
+const CN_TO_EN: Record<string, string> = {
+  "任务名称": "title",
+  "详细描述": "description",
+  "任务状态": "status",
+  "转化行动": "action",
+  "标签": "tags",
+};
+
+function toFrontend(r: FeishuRecord) {
+  const result: Record<string, unknown> = { id: r.record_id };
+  for (const [key, value] of Object.entries(r.fields)) {
+    result[CN_TO_EN[key] || key] = value;
+  }
+  return result;
+}
 
 const app = new Hono();
 
 app.get("/", async (c) => {
-  const status = c.req.query("status");
-  const where: Record<string, unknown> = {};
-  if (status) where.status = status;
-  const items = await prisma.task.findMany({ where, orderBy: [{ priority: "asc" }, { createdAt: "desc" }], take: 100 });
-  return c.json(items);
+  const records = await listRecords(TABLE);
+  return c.json(records.map(toFrontend));
 });
 
 app.post("/", async (c) => {
   const body = await c.req.json();
-  const item = await prisma.task.create({
-    data: { title: body.title, description: body.description || "", status: body.status || "todo", priority: body.priority || "normal", tags: body.tags || "[]" },
-  });
-  await prisma.searchIndex.upsert({
-    where: { entityType_entityId: { entityType: "task", entityId: item.id } },
-    create: { entityType: "task", entityId: item.id, title: item.title, content: item.description, tags: item.tags },
-    update: { title: item.title, content: item.description, tags: item.tags },
-  });
-  const feishuId = await syncAfterCreate("task", item.id, body, async (fid) => {
-    await prisma.task.update({ where: { id: item.id }, data: { feishuId: fid } });
-  });
-  return c.json({ ...item, feishuId }, 201);
+  const fields: Record<string, unknown> = {};
+  if (body.title) fields["任务名称"] = body.title;
+  if (body.description) fields["详细描述"] = body.description;
+  if (body.status) fields["任务状态"] = body.status;
+  if (body.action) fields["转化行动"] = body.action;
+  if (body.tags) fields["标签"] = typeof body.tags === "string" ? body.tags : JSON.stringify(body.tags);
+
+  const record = await createRecord(TABLE, fields);
+  if (!record) return c.json({ error: "Failed to create" }, 500);
+  return c.json(toFrontend(record), 201);
 });
 
 app.get("/:id", async (c) => {
-  const item = await prisma.task.findUnique({ where: { id: c.req.param("id") } });
-  if (!item) return c.json({ error: "Not found" }, 404);
-  return c.json(item);
+  const record = await getRecord(TABLE, c.req.param("id"));
+  if (!record) return c.json({ error: "Not found" }, 404);
+  return c.json(toFrontend(record));
 });
 
 app.put("/:id", async (c) => {
   const body = await c.req.json();
-  const id = c.req.param("id");
-  const existing = await prisma.task.findUnique({ where: { id } });
-  const item = await prisma.task.update({
-    where: { id },
-    data: { title: body.title, description: body.description, status: body.status, priority: body.priority, tags: body.tags },
-  });
-  await syncAfterUpdate("task", existing?.feishuId ?? null, body);
-  await prisma.searchIndex.upsert({
-    where: { entityType_entityId: { entityType: "task", entityId: id } },
-    create: { entityType: "task", entityId: id, title: item.title, content: item.description, tags: item.tags },
-    update: { title: item.title, content: item.description, tags: item.tags },
-  });
-  return c.json(item);
+  const fields: Record<string, unknown> = {};
+  if (body.title !== undefined) fields["任务名称"] = body.title;
+  if (body.description !== undefined) fields["详细描述"] = body.description;
+  if (body.status !== undefined) fields["任务状态"] = body.status;
+  if (body.action !== undefined) fields["转化行动"] = body.action;
+  if (body.tags !== undefined) fields["标签"] = typeof body.tags === "string" ? body.tags : JSON.stringify(body.tags);
+
+  const record = await updateRecord(TABLE, c.req.param("id"), fields);
+  if (!record) return c.json({ error: "Update failed" }, 500);
+  return c.json(toFrontend(record));
 });
 
 app.delete("/:id", async (c) => {
-  const id = c.req.param("id");
-  const existing = await prisma.task.findUnique({ where: { id } });
-  await prisma.task.delete({ where: { id } });
-  await prisma.searchIndex.deleteMany({ where: { entityType: "task", entityId: id } });
-  await syncAfterDelete("task", existing?.feishuId ?? null);
+  const ok = await deleteRecord(TABLE, c.req.param("id"));
+  if (!ok) return c.json({ error: "Delete failed" }, 500);
   return c.json({ ok: true });
 });
 
