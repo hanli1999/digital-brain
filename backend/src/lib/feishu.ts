@@ -33,3 +33,36 @@ export async function feishuRequest(method: string, path: string, body?: unknown
   });
   return resp.json();
 }
+
+const APP_TOKEN = "MDmcwLhJIiwpK5k5yuecRWu4nee";
+
+export interface FeishuRecord {
+  record_id: string;
+  fields: Record<string, unknown>;
+}
+
+export async function listRecords(tableId: string, params?: Record<string, string>): Promise<FeishuRecord[]> {
+  const query = new URLSearchParams(params || {});
+  const data = await feishuRequest("GET", `/bitable/v1/apps/${APP_TOKEN}/tables/${tableId}/records?${query.toString()}`);
+  return (data?.data?.items as FeishuRecord[]) || [];
+}
+
+export async function getRecord(tableId: string, recordId: string): Promise<FeishuRecord | null> {
+  const data = await feishuRequest("GET", `/bitable/v1/apps/${APP_TOKEN}/tables/${tableId}/records/${recordId}`);
+  return (data?.data?.record as FeishuRecord) || null;
+}
+
+export async function createRecord(tableId: string, fields: Record<string, unknown>): Promise<FeishuRecord | null> {
+  const data = await feishuRequest("POST", `/bitable/v1/apps/${APP_TOKEN}/tables/${tableId}/records`, { fields });
+  return (data?.data?.record as FeishuRecord) || null;
+}
+
+export async function updateRecord(tableId: string, recordId: string, fields: Record<string, unknown>): Promise<FeishuRecord | null> {
+  const data = await feishuRequest("PUT", `/bitable/v1/apps/${APP_TOKEN}/tables/${tableId}/records/${recordId}`, { fields });
+  return (data?.data?.record as FeishuRecord) || null;
+}
+
+export async function deleteRecord(tableId: string, recordId: string): Promise<boolean> {
+  const data = await feishuRequest("DELETE", `/bitable/v1/apps/${APP_TOKEN}/tables/${tableId}/records/${recordId}`);
+  return data?.code === 0;
+}
