@@ -19,6 +19,7 @@ const moreItems = [
   { href: "/files", label: "文件管理", icon: "📁" },
   { href: "/calendar", label: "任务清单", icon: "📅" },
   { href: "/resources", label: "资源管理", icon: "💎" },
+  { href: "/insight", label: "洞察", icon: "💡" },
 ];
 
 export function SidebarNav() {
@@ -99,6 +100,15 @@ export function SidebarNav() {
           <span className="text-base w-5 text-center">⚙️</span>
           <span>设置</span>
         </Link>
+        <div className="mt-2 pt-2 border-t border-sidebar-border/50">
+          <div className="flex items-center gap-2 px-3 py-1.5">
+            <span className="text-sm">🧝</span>
+            <div className="flex flex-col">
+              <span className="text-[11px] text-sidebar-foreground/70 font-medium">银月</span>
+              <span className="text-[9px] text-sidebar-foreground/40">洞府管家</span>
+            </div>
+          </div>
+        </div>
       </div>
     </aside>
   );

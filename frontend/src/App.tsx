@@ -17,6 +17,7 @@ import Calendar from "@/pages/Calendar";
 import Analytics from "@/pages/Analytics";
 import Resources from "@/pages/Resources";
 import AiEngine from "@/pages/AiEngine";
+import Insight from "@/pages/Insight";
 import Search from "@/pages/Search";
 import Settings from "@/pages/Settings";
 import Login from "@/pages/Login";
@@ -46,6 +47,7 @@ function AppLayout() {
           <Route path="/resources" element={<Resources />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/ai-engine" element={<AiEngine />} />
+          <Route path="/insight" element={<Insight />} />
           <Route path="/search" element={<Search />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>

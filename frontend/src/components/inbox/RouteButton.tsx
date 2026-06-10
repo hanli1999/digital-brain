@@ -11,6 +11,7 @@ const targets = [
   { key: "library", label: "📚 入库到文献库", keywords: ["论文", "文章", "文献", "paper", "阅读", "研究"] },
   { key: "ai-engine", label: "🤖 入库到 AI Agent 库", keywords: ["AI", "agent", "智能体", "prompt", "提示词", "模型", "GPT", "LLM"] },
   { key: "resources", label: "📊 入库到资源管理", keywords: ["数据", "指标", "统计", "metric", "资源", "预算"] },
+  { key: "insight", label: "💡 入库到洞察", keywords: ["灵感", "想法", "洞察", "感悟", "观察", "反思", "insight", "笔记", "随记", "领悟"] },
 ];
 
 function suggestTarget(title: string, content: string): string | null {

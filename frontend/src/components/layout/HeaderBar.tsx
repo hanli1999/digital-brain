@@ -1,10 +1,12 @@
 "use client";
 
 import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SyncIndicator } from "@/components/shared/SyncIndicator";
 import { useAuth } from "@/lib/AuthContext";
+import { API_BASE_URL } from "@/config/api";
 
 const pageTitles: Record<string, string> = {
   "/": "仪表盘",
@@ -17,6 +19,7 @@ const pageTitles: Record<string, string> = {
   "/library": "文献库",
   "/files": "文件管理",
   "/calendar": "日程",
+  "/insight": "洞察",
   "/search": "全局搜索",
   "/settings": "设置",
 };
@@ -26,6 +29,14 @@ export function HeaderBar() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const title = pageTitles[pathname] || "";
+  const [online, setOnline] = useState(false);
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/status`)
+      .then((r) => r.json())
+      .then((d) => setOnline(d.status === "online"))
+      .catch(() => setOnline(false));
+  }, []);
 
   return (
     <header className="h-14 border-b border-sidebar-border/60 flex items-center justify-between px-6 fixed top-0 left-56 right-0 bg-background/95 backdrop-blur-sm z-10">
@@ -46,7 +57,12 @@ export function HeaderBar() {
           />
         </form>
         <SyncIndicator />
-        <span className="text-xs text-muted-foreground/70">{user?.username}</span>
+        <span className="flex items-center gap-1.5 text-xs">
+          <span className={`inline-block w-1.5 h-1.5 rounded-full ${online ? "bg-emerald-400 shadow-[0_0_6px_var(--emerald-400)]" : "bg-red-400"}`} />
+          <span className={online ? "text-emerald-400/80" : "text-red-400/80"}>银月</span>
+          <span className="text-muted-foreground/50">{online ? "在线" : "离线"}</span>
+        </span>
+        <span className="text-xs text-muted-foreground/50">{user?.username}</span>
         <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-foreground" onClick={logout}>退出</Button>
       </div>
     </header>

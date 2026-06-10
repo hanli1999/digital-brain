@@ -84,6 +84,16 @@ export interface Metric {
   timestamp: string;
 }
 
+export interface Insight {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
+  source: string;
+  tags: string;
+  createdAt: string;
+}
+
 export interface SearchResult {
   id: string;
   entityType: string;

@@ -20,6 +20,7 @@ import aiRoutes from "./routes/ai.js";
 import searchRoutes from "./routes/search.js";
 import settingsRoutes from "./routes/settings.js";
 import syncRoutes from "./routes/sync.js";
+import insightRoutes from "./routes/insight.js";
 import webhookRoutes from "./routes/webhook.js";
 
 const app = new Hono();
@@ -39,6 +40,12 @@ app.use("/uploads/*", serveStatic({ root: "./" }));
 
 // 公开路由（无需认证）
 app.route("/api/auth", authRoutes);
+
+app.get("/api/status", (c) => c.json({
+  status: "online",
+  uptime: process.uptime(),
+  timestamp: new Date().toISOString(),
+}));
 
 // 保护路由（需要 JWT）
 app.use("/api/inbox/*", authMiddleware);
@@ -69,6 +76,8 @@ app.use("/api/settings/*", authMiddleware);
 app.route("/api/settings", settingsRoutes);
 app.use("/api/sync/*", authMiddleware);
 app.route("/api/sync", syncRoutes);
+app.use("/api/insight/*", authMiddleware);
+app.route("/api/insight", insightRoutes);
 app.use("/api/webhook/*", authMiddleware);
 app.route("/api/webhook", webhookRoutes);
 
