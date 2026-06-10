@@ -13,7 +13,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { apiFetch } from "@/config/api";
 import type { InboxItem } from "@/types/api";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, LayoutGrid, List } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+
+const INTERNAL_TAGS = new Set([
+  "数字洞府", "使用说明书", "今日收件箱", "机缘录", "功法库", "法器阁", "丹房",
+  "AI字段", "炼化结果", "归位去处", "距今天数", "时间权重分",
+]);
 
 interface ParsedCard {
   title: string;
@@ -36,6 +42,7 @@ export default function InboxPage() {
   const [nlInput, setNlInput] = useState("");
   const [parsing, setParsing] = useState(false);
   const [parsed, setParsed] = useState<ParsedCard | null>(null);
+  const [viewMode, setViewMode] = useState<"table" | "card">("table");
 
   const { data: items = [], isLoading } = useQuery<InboxItem[]>({
     queryKey: ["inbox"],
@@ -100,7 +107,7 @@ export default function InboxPage() {
   const filteredItems = activeTag
     ? items.filter((i) => { try { return JSON.parse(i.tags).includes(activeTag); } catch { return false; } })
     : items;
-  const allTags = Array.from(new Set(items.flatMap((i) => { try { return JSON.parse(i.tags); } catch { return []; } }))) as string[];
+  const allTags = Array.from(new Set(items.flatMap((i) => { try { return JSON.parse(i.tags); } catch { return []; } }))).filter((t) => !INTERNAL_TAGS.has(t as string)) as string[];
 
   if (isLoading) return <div className="text-center py-12 text-muted-foreground">加载中...</div>;
 
@@ -156,8 +163,15 @@ export default function InboxPage() {
 
       <div className="flex items-center justify-between mb-4">
         <FilterPanel tags={allTags} activeTag={activeTag} onTagChange={setActiveTag} />
-        <Dialog open={showNewItem} onOpenChange={setShowNewItem}>
-          <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/80 h-8 px-3 text-xs font-medium transition-all">+ 高级新建</DialogTrigger>
+        <div className="flex items-center gap-2">
+          <Button variant={viewMode === "table" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("table")}>
+            <List className="h-4 w-4" />
+          </Button>
+          <Button variant={viewMode === "card" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("card")}>
+            <LayoutGrid className="h-4 w-4" />
+          </Button>
+          <Dialog open={showNewItem} onOpenChange={setShowNewItem}>
+            <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/80 h-8 px-3 text-xs font-medium transition-all">+ 高级新建</DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>新建收件箱条目</DialogTitle></DialogHeader>
             <div className="space-y-3">
@@ -168,10 +182,38 @@ export default function InboxPage() {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {filteredItems.length === 0 ? (
         <EmptyState title="收件箱为空" description="在上方输入框直接用自然语言记录，AI 会自动分类" actionLabel="手动新建" onAction={() => setShowNewItem(true)} />
+      ) : viewMode === "card" ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {filteredItems.map((item) => (
+            <Card
+              key={item.id}
+              className="cursor-pointer hover:shadow-sm transition-shadow"
+              onClick={() => setSelectedId(item.id)}
+            >
+              <CardContent className="p-4 space-y-2">
+                <div className="flex items-start justify-between">
+                  <span className="font-medium text-sm line-clamp-2">{item.title}</span>
+                  <StatusBadge status={item.status} />
+                </div>
+                <p className="text-xs text-muted-foreground line-clamp-3">{item.content}</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {(() => { try { return (JSON.parse(item.tags) as string[]).slice(0, 3); } catch { return []; } })().map((t: string) => (
+                    <span key={t} className="text-xs bg-muted px-1.5 py-0.5 rounded-full">{t}</span>
+                  ))}
+                </div>
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>{item.source === "manual" ? "手动" : item.source === "feishu-bot" ? "飞书机器人" : "飞书导入"}</span>
+                  <span>{new Date(item.createdAt).toLocaleDateString("zh-CN")}</span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       ) : (
         <DataTable
           columns={[
