@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { API_BASE_URL } from "@/config/api";
+import { apiFetch } from "@/config/api";
 
 const quickLinks = [
   { href: "/inbox", label: "收件箱", desc: "管理待处理条目", color: "border-l-blue-500" },
@@ -16,8 +16,8 @@ export default function Dashboard() {
     queryKey: ["dashboard"],
     queryFn: async () => {
       const [inbox, tasks] = await Promise.all([
-        fetch(`${API_BASE_URL}/inbox?status=pending`).then((r) => r.json()),
-        fetch(`${API_BASE_URL}/tasks?status=todo`).then((r) => r.json()),
+        apiFetch(`/inbox?status=pending`).then((r) => r.json()),
+        apiFetch(`/tasks?status=todo`).then((r) => r.json()),
       ]);
       return { pendingInbox: inbox.length, todoTasks: tasks.length };
     },

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { API_BASE_URL } from "@/config/api";
+import { apiFetch } from "@/config/api";
 
 export default function SettingsPage() {
   const queryClient = useQueryClient();
@@ -14,7 +14,7 @@ export default function SettingsPage() {
 
   const { data: settings, isLoading } = useQuery<Record<string, string>>({
     queryKey: ["settings"],
-    queryFn: () => fetch(`${API_BASE_URL}/settings`).then((r) => r.json()),
+    queryFn: () => apiFetch(`/settings`).then((r) => r.json()),
   });
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export default function SettingsPage() {
 
   const saveMutation = useMutation({
     mutationFn: (data: Record<string, string>) =>
-      fetch(`${API_BASE_URL}/settings`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      apiFetch(`/settings`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["settings"] });
       setSaved(true);

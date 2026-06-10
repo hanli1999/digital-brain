@@ -6,7 +6,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { API_BASE_URL } from "@/config/api";
+import { apiFetch } from "@/config/api";
 import type { FileAsset } from "@/types/api";
 
 function formatSize(bytes: number): string {
@@ -23,12 +23,12 @@ export default function FilesPage() {
 
   const { data: files = [], isLoading } = useQuery<FileAsset[]>({
     queryKey: ["files"],
-    queryFn: () => fetch(`${API_BASE_URL}/files`).then((r) => r.json()),
+    queryFn: () => apiFetch(`/files`).then((r) => r.json()),
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: { filename: string; url: string; mimeType: string; size: number }) =>
-      fetch(`${API_BASE_URL}/files`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    mutationFn: (data: { filename: string; data: string; mimeType: string }) =>
+      apiFetch(`/files/upload`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["files"] });
       setShowNew(false);
@@ -37,7 +37,7 @@ export default function FilesPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => fetch(`${API_BASE_URL}/files/${id}`, { method: "DELETE" }),
+    mutationFn: (id: string) => apiFetch(`/files/${id}`, { method: "DELETE" }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["files"] }); toast.success("已删除"); },
     onError: () => toast.error("删除失败"),
   });
@@ -46,13 +46,13 @@ export default function FilesPage() {
     const f = fileRef.current?.files?.[0];
     if (!f) return;
     setUploading(true);
-    createMutation.mutate({
-      filename: f.name,
-      url: URL.createObjectURL(f),
-      mimeType: f.type,
-      size: f.size,
-    });
-    setUploading(false);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(",")[1];
+      createMutation.mutate({ filename: f.name, data: base64, mimeType: f.type });
+      setUploading(false);
+    };
+    reader.readAsDataURL(f);
   };
 
   if (isLoading) return <div className="text-center py-12 text-muted-foreground">加载中...</div>;

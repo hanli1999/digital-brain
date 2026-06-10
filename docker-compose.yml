@@ -1,0 +1,25 @@
+version: "3.8"
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "3001:3001"
+    volumes:
+      - backend-data:/app/prisma
+    environment:
+      - DATABASE_URL=file:./prisma/dev.db
+      - PORT=3001
+      - FEISHU_APP_ID=${FEISHU_APP_ID:-}
+      - FEISHU_APP_SECRET=${FEISHU_APP_SECRET:-}
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:4173"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  backend-data:

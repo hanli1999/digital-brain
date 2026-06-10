@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { API_BASE_URL } from "@/config/api";
+import { apiFetch } from "@/config/api";
 import type { AiMechanism } from "@/types/api";
 
 const typeLabels: Record<string, string> = {
@@ -30,12 +30,12 @@ export default function AiEnginePage() {
 
   const { data: items = [], isLoading } = useQuery<AiMechanism[]>({
     queryKey: ["ai-engine"],
-    queryFn: () => fetch(`${API_BASE_URL}/ai-engine`).then((r) => r.json()),
+    queryFn: () => apiFetch(`/ai-engine`).then((r) => r.json()),
   });
 
   const createMutation = useMutation({
     mutationFn: (data: { name: string; type: string; content: string; parameters: string }) =>
-      fetch(`${API_BASE_URL}/ai-engine`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      apiFetch(`/ai-engine`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ai-engine"] });
       setShowNew(false); setName(""); setType("prompt"); setContent(""); setParameters("");
@@ -44,7 +44,7 @@ export default function AiEnginePage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => fetch(`${API_BASE_URL}/ai-engine/${id}`, { method: "DELETE" }),
+    mutationFn: (id: string) => apiFetch(`/ai-engine/${id}`, { method: "DELETE" }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["ai-engine"] }); setSelectedId(null); toast.success("已删除"); },
     onError: () => toast.error("删除失败"),
   });

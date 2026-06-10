@@ -40,6 +40,11 @@ app.put("/:id", async (c) => {
     data: { name: body.name, type: body.type, content: body.content, parameters: body.parameters },
   });
   await syncAfterUpdate("ai_mechanism", existing?.feishuId ?? null, body);
+  await prisma.searchIndex.upsert({
+    where: { entityType_entityId: { entityType: "ai_mechanism", entityId: id } },
+    create: { entityType: "ai_mechanism", entityId: id, title: item.name, content: item.content },
+    update: { title: item.name, content: item.content },
+  });
   return c.json(item);
 });
 
@@ -47,6 +52,7 @@ app.delete("/:id", async (c) => {
   const id = c.req.param("id");
   const existing = await prisma.aiMechanism.findUnique({ where: { id } });
   await prisma.aiMechanism.delete({ where: { id } });
+  await prisma.searchIndex.deleteMany({ where: { entityType: "ai_mechanism", entityId: id } });
   await syncAfterDelete("ai_mechanism", existing?.feishuId ?? null);
   return c.json({ ok: true });
 });

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { API_BASE_URL } from "@/config/api";
+import { apiFetch } from "@/config/api";
 import type { Method } from "@/types/api";
 
 export default function MethodsPage() {
@@ -23,17 +23,17 @@ export default function MethodsPage() {
 
   const { data: methods = [], isLoading } = useQuery<Method[]>({
     queryKey: ["methods"],
-    queryFn: () => fetch(`${API_BASE_URL}/methods`).then((r) => r.json()),
+    queryFn: () => apiFetch(`/methods`).then((r) => r.json()),
   });
 
   const createMutation = useMutation({
     mutationFn: (data: { title: string; content: string; tags: string }) =>
-      fetch(`${API_BASE_URL}/methods`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      apiFetch(`/methods`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["methods"] }); setShowNew(false); setTitle(""); setContent(""); setTags(""); toast.success("已添加方法"); },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => fetch(`${API_BASE_URL}/methods/${id}`, { method: "DELETE" }),
+    mutationFn: (id: string) => apiFetch(`/methods/${id}`, { method: "DELETE" }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["methods"] }); setSelectedId(null); toast.success("已删除"); },
     onError: () => toast.error("删除失败"),
   });

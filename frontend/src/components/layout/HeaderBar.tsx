@@ -2,7 +2,9 @@
 
 import { useLocation, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { SyncIndicator } from "@/components/shared/SyncIndicator";
+import { useAuth } from "@/lib/AuthContext";
 
 const pageTitles: Record<string, string> = {
   "/": "仪表盘",
@@ -22,6 +24,7 @@ const pageTitles: Record<string, string> = {
 export function HeaderBar() {
   const pathname = useLocation().pathname;
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const title = pageTitles[pathname] || "";
 
   return (
@@ -43,6 +46,8 @@ export function HeaderBar() {
           />
         </form>
         <SyncIndicator />
+        <span className="text-xs text-muted-foreground">{user?.username}</span>
+        <Button variant="ghost" size="sm" className="text-xs" onClick={logout}>退出</Button>
       </div>
     </header>
   );

@@ -17,6 +17,11 @@ app.post("/", async (c) => {
   const feishuId = await syncAfterCreate("library", item.id, body, async (fid) => {
     await prisma.metric.update({ where: { id: item.id }, data: { feishuId: fid } });
   });
+  await prisma.searchIndex.upsert({
+    where: { entityType_entityId: { entityType: "resource", entityId: item.id } },
+    create: { entityType: "resource", entityId: item.id, title: item.name, content: item.category },
+    update: { title: item.name, content: item.category },
+  });
   return c.json({ ...item, feishuId }, 201);
 });
 
@@ -35,6 +40,11 @@ app.put("/:id", async (c) => {
     data: { name: body.name, value: body.value, unit: body.unit, category: body.category },
   });
   await syncAfterUpdate("library", existing?.feishuId ?? null, body);
+  await prisma.searchIndex.upsert({
+    where: { entityType_entityId: { entityType: "resource", entityId: id } },
+    create: { entityType: "resource", entityId: id, title: item.name, content: item.category },
+    update: { title: item.name, content: item.category },
+  });
   return c.json(item);
 });
 
@@ -42,6 +52,7 @@ app.delete("/:id", async (c) => {
   const id = c.req.param("id");
   const existing = await prisma.metric.findUnique({ where: { id } });
   await prisma.metric.delete({ where: { id } });
+  await prisma.searchIndex.deleteMany({ where: { entityType: "resource", entityId: id } });
   await syncAfterDelete("library", existing?.feishuId ?? null);
   return c.json({ ok: true });
 });

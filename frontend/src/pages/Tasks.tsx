@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { toast } from "sonner";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { API_BASE_URL } from "@/config/api";
+import { apiFetch } from "@/config/api";
 import type { Task } from "@/types/api";
 
 const columns = [
@@ -24,19 +25,25 @@ export default function TasksPage() {
 
   const { data: tasks = [], isLoading } = useQuery<Task[]>({
     queryKey: ["tasks"],
-    queryFn: () => fetch(`${API_BASE_URL}/tasks`).then((r) => r.json()),
+    queryFn: () => apiFetch(`/tasks`).then((r) => r.json()),
   });
 
   const createMutation = useMutation({
     mutationFn: (data: { title: string; description: string }) =>
-      fetch(`${API_BASE_URL}/tasks`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["tasks"] }); setShowNew(false); setTitle(""); setDesc(""); },
+      apiFetch(`/tasks`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["tasks"] }); setShowNew(false); setTitle(""); setDesc(""); toast.success("已创建任务"); },
   });
 
   const moveMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
-      fetch(`${API_BASE_URL}/tasks/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) }).then((r) => r.json()),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks"] }),
+      apiFetch(`/tasks/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) }).then((r) => r.json()),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["tasks"] }); toast.success("状态已更新"); },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => apiFetch(`/tasks/${id}`, { method: "DELETE" }),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["tasks"] }); toast.success("已删除"); },
+    onError: () => toast.error("删除失败"),
   });
 
   if (isLoading) return <div className="text-center py-12 text-muted-foreground">加载中...</div>;
@@ -66,7 +73,12 @@ export default function TasksPage() {
               <div className="space-y-2">
                 {tasks.filter((t) => t.status === col.key).map((task) => (
                   <Card key={task.id} className="cursor-pointer hover:shadow-sm">
-                    <CardHeader className="p-3 pb-0"><CardTitle className="text-sm">{task.title}</CardTitle></CardHeader>
+                    <CardHeader className="p-3 pb-0">
+                      <div className="flex items-start justify-between">
+                        <CardTitle className="text-sm">{task.title}</CardTitle>
+                        <Button variant="ghost" size="sm" className="text-xs text-red-500 h-5 w-5 p-0" onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(task.id); }}>×</Button>
+                      </div>
+                    </CardHeader>
                     <CardContent className="p-3 pt-1">
                       {task.description && <p className="text-xs text-muted-foreground line-clamp-2">{task.description}</p>}
                       <div className="flex items-center gap-2 mt-2">

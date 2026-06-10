@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
-import { API_BASE_URL } from "@/config/api";
+import { apiFetch } from "@/config/api";
 import type { CalendarEvent } from "@/types/api";
 
 export default function CalendarPage() {
@@ -19,12 +19,12 @@ export default function CalendarPage() {
 
   const { data: events = [], isLoading } = useQuery<CalendarEvent[]>({
     queryKey: ["calendar"],
-    queryFn: () => fetch(`${API_BASE_URL}/calendar`).then((r) => r.json()),
+    queryFn: () => apiFetch(`/calendar`).then((r) => r.json()),
   });
 
   const createMutation = useMutation({
     mutationFn: (data: { title: string; description: string; startTime: string }) =>
-      fetch(`${API_BASE_URL}/calendar`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      apiFetch(`/calendar`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["calendar"] });
       setShowNew(false);
@@ -36,7 +36,7 @@ export default function CalendarPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => fetch(`${API_BASE_URL}/calendar/${id}`, { method: "DELETE" }),
+    mutationFn: (id: string) => apiFetch(`/calendar/${id}`, { method: "DELETE" }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["calendar"] }); toast.success("已删除"); },
     onError: () => toast.error("删除失败"),
   });

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { API_BASE_URL } from "@/config/api";
+import { apiFetch } from "@/config/api";
 import type { Document } from "@/types/api";
 
 export default function LibraryPage() {
@@ -21,17 +21,17 @@ export default function LibraryPage() {
 
   const { data: docs = [], isLoading } = useQuery<Document[]>({
     queryKey: ["library"],
-    queryFn: () => fetch(`${API_BASE_URL}/library`).then((r) => r.json()),
+    queryFn: () => apiFetch(`/library`).then((r) => r.json()),
   });
 
   const createMutation = useMutation({
     mutationFn: (data: { title: string; abstract: string; author: string }) =>
-      fetch(`${API_BASE_URL}/library`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      apiFetch(`/library`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["library"] }); setShowNew(false); setTitle(""); setAbstract(""); setAuthor(""); toast.success("已添加文献"); },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => fetch(`${API_BASE_URL}/library/${id}`, { method: "DELETE" }),
+    mutationFn: (id: string) => apiFetch(`/library/${id}`, { method: "DELETE" }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["library"] }); setSelectedId(null); toast.success("已删除"); },
     onError: () => toast.error("删除失败"),
   });

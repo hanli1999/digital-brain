@@ -49,6 +49,11 @@ app.put("/:id", async (c) => {
     data: { title: body.title, content: body.content, tags: body.tags, status: body.status },
   });
   await syncAfterUpdate("inbox", existing?.feishuId ?? null, body);
+  await prisma.searchIndex.upsert({
+    where: { entityType_entityId: { entityType: "inbox", entityId: id } },
+    create: { entityType: "inbox", entityId: id, title: item.title, content: item.content, tags: item.tags },
+    update: { title: item.title, content: item.content, tags: item.tags },
+  });
   return c.json(item);
 });
 
@@ -56,6 +61,7 @@ app.delete("/:id", async (c) => {
   const id = c.req.param("id");
   const existing = await prisma.inboxItem.findUnique({ where: { id } });
   await prisma.inboxItem.delete({ where: { id } });
+  await prisma.searchIndex.deleteMany({ where: { entityType: "inbox", entityId: id } });
   await syncAfterDelete("inbox", existing?.feishuId ?? null);
   return c.json({ ok: true });
 });

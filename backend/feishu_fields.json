@@ -1,0 +1,324 @@
+{
+  "code": 0,
+  "data": {
+    "has_more": false,
+    "items": [
+      {
+        "field_id": "fldaPxqOF4",
+        "field_name": "收集内容",
+        "is_extend": false,
+        "is_primary": true,
+        "is_synced": false,
+        "property": null,
+        "type": 1,
+        "ui_type": "Text"
+      },
+      {
+        "field_id": "fldE5QF9Uq",
+        "field_name": "附件",
+        "is_extend": false,
+        "is_primary": false,
+        "is_synced": false,
+        "property": null,
+        "type": 17,
+        "ui_type": "Attachment"
+      },
+      {
+        "field_id": "fldnGu4RSo",
+        "field_name": "附件识别结果",
+        "is_extend": false,
+        "is_primary": false,
+        "is_synced": false,
+        "property": null,
+        "type": 1,
+        "ui_type": "Text"
+      },
+      {
+        "field_id": "fld9dBk61S",
+        "field_name": "处理状态",
+        "is_extend": false,
+        "is_primary": false,
+        "is_synced": false,
+        "property": {
+          "options": [
+            {
+              "color": 0,
+              "id": "optm2YGD5o",
+              "name": "未处理"
+            },
+            {
+              "color": 1,
+              "id": "optjp5x2IH",
+              "name": "处理中"
+            },
+            {
+              "color": 2,
+              "id": "optp33Q1Zv",
+              "name": "已炼化"
+            },
+            {
+              "color": 3,
+              "id": "opt180729814",
+              "name": "待炼化"
+            }
+          ]
+        },
+        "type": 3,
+        "ui_type": "SingleSelect"
+      },
+      {
+        "field_id": "fldTtoL1l7",
+        "field_name": "初步分类",
+        "is_extend": false,
+        "is_primary": false,
+        "is_synced": false,
+        "property": {
+          "options": [
+            {
+              "color": 1,
+              "id": "optMkKFeC2",
+              "name": "待读文章或课程"
+            },
+            {
+              "color": 2,
+              "id": "opt7bgijnQ",
+              "name": "有用工具或资源"
+            },
+            {
+              "color": 3,
+              "id": "optdEQfied",
+              "name": "待办任务或行动"
+            },
+            {
+              "color": 4,
+              "id": "optOjQR4UY",
+              "name": "个人感悟或灵感"
+            },
+            {
+              "color": 0,
+              "id": "opt1627422735",
+              "name": "其他"
+            }
+          ]
+        },
+        "type": 3,
+        "ui_type": "SingleSelect"
+      },
+      {
+        "field_id": "fldORL7Jtq",
+        "field_name": "炼化结果",
+        "is_extend": false,
+        "is_primary": false,
+        "is_synced": false,
+        "property": null,
+        "type": 1,
+        "ui_type": "Text"
+      },
+      {
+        "field_id": "fld4IUqBAx",
+        "field_name": "核心词",
+        "is_extend": false,
+        "is_primary": false,
+        "is_synced": false,
+        "property": null,
+        "type": 1,
+        "ui_type": "Text"
+      },
+      {
+        "field_id": "fldR4wMwTn",
+        "field_name": "情绪色",
+        "is_extend": false,
+        "is_primary": false,
+        "is_synced": false,
+        "property": null,
+        "type": 1,
+        "ui_type": "Text"
+      },
+      {
+        "field_id": "fldapIbkWd",
+        "field_name": "归入建议",
+        "is_extend": false,
+        "is_primary": false,
+        "is_synced": false,
+        "property": {
+          "options": [
+            {
+              "color": 0,
+              "id": "opt6YQzEBw",
+              "name": "机缘录"
+            },
+            {
+              "color": 15,
+              "id": "optruPrLqH",
+              "name": "方法库"
+            },
+            {
+              "color": 11,
+              "id": "optpmHo80W",
+              "name": "法器阁"
+            },
+            {
+              "color": 12,
+              "id": "optDmuz5ZK",
+              "name": "丹房"
+            },
+            {
+              "color": 1,
+              "id": "opta7VFgdg",
+              "name": "AI机制库"
+            }
+          ]
+        },
+        "type": 3,
+        "ui_type": "SingleSelect"
+      },
+      {
+        "field_id": "fld5HlD7mr",
+        "field_name": "入机缘录",
+        "is_extend": false,
+        "is_primary": false,
+        "is_synced": false,
+        "property": null,
+        "type": 3001,
+        "ui_type": "Button"
+      },
+      {
+        "field_id": "fldZMnkUCV",
+        "field_name": "入方法库",
+        "is_extend": false,
+        "is_primary": false,
+        "is_synced": false,
+        "property": null,
+        "type": 3001,
+        "ui_type": "Button"
+      },
+      {
+        "field_id": "fld9mELNI5",
+        "field_name": "入丹房",
+        "is_extend": false,
+        "is_primary": false,
+        "is_synced": false,
+        "property": null,
+        "type": 3001,
+        "ui_type": "Button"
+      },
+      {
+        "field_id": "fldFP2zQZq",
+        "field_name": "入法器阁",
+        "is_extend": false,
+        "is_primary": false,
+        "is_synced": false,
+        "property": null,
+        "type": 3001,
+        "ui_type": "Button"
+      },
+      {
+        "field_id": "fldAb0QXv8",
+        "field_name": "入AI机制库",
+        "is_extend": false,
+        "is_primary": false,
+        "is_synced": false,
+        "property": null,
+        "type": 3001,
+        "ui_type": "Button"
+      },
+      {
+        "field_id": "fldKmo5qnH",
+        "field_name": "归位去处",
+        "is_extend": false,
+        "is_primary": false,
+        "is_synced": false,
+        "property": null,
+        "type": 1,
+        "ui_type": "Text"
+      },
+      {
+        "field_id": "fldDEi7xIl",
+        "field_name": "来源",
+        "is_extend": false,
+        "is_primary": false,
+        "is_synced": false,
+        "property": null,
+        "type": 1,
+        "ui_type": "Text"
+      },
+      {
+        "field_id": "fldmm3NWHg",
+        "field_name": "收集时间",
+        "is_extend": false,
+        "is_primary": false,
+        "is_synced": false,
+        "property": {
+          "date_formatter": "yyyy/MM/dd HH:mm"
+        },
+        "type": 1001,
+        "ui_type": "CreatedTime"
+      },
+      {
+        "field_id": "fld6MtrC7V",
+        "field_name": "来源 (1)",
+        "is_extend": false,
+        "is_primary": false,
+        "is_synced": false,
+        "property": null,
+        "type": 15,
+        "ui_type": "Url"
+      },
+      {
+        "field_id": "fld2sJVRuY",
+        "field_name": "创建时间",
+        "is_extend": false,
+        "is_primary": false,
+        "is_synced": false,
+        "property": {
+          "date_formatter": "yyyy/MM/dd HH:mm"
+        },
+        "type": 1001,
+        "ui_type": "CreatedTime"
+      },
+      {
+        "field_id": "fld6U0jLRj",
+        "field_name": "距今天数",
+        "is_extend": false,
+        "is_primary": false,
+        "is_synced": false,
+        "property": {
+          "formatter": "",
+          "formula_expression": "DAYS(TODAY(),TODATE(bitable::$table[tbl2pG26LdF3c3cX].$field[fld2sJVRuY]))",
+          "type": {
+            "data_type": 2,
+            "ui_property": {
+              "formatter": "0"
+            },
+            "ui_type": "Number"
+          }
+        },
+        "type": 20,
+        "ui_type": "Formula"
+      },
+      {
+        "field_id": "fldIEFFGxD",
+        "field_name": "时间权重分",
+        "is_extend": false,
+        "is_primary": false,
+        "is_synced": false,
+        "property": {
+          "formatter": "",
+          "formula_expression": "1/(1+0.01*DAYS(TODAY(),TODATE(bitable::$table[tbl2pG26LdF3c3cX].$field[fld2sJVRuY])))",
+          "type": {
+            "data_type": 2,
+            "ui_property": {
+              "formatter": "0"
+            },
+            "ui_type": "Number"
+          }
+        },
+        "type": 20,
+        "ui_type": "Formula"
+      }
+    ],
+    "page_token": "fldIEFFGxD",
+    "total": 21
+  },
+  "msg": "success"
+}

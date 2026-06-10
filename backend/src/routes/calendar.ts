@@ -17,6 +17,11 @@ app.post("/", async (c) => {
   const feishuId = await syncAfterCreate("calendar", item.id, body, async (fid) => {
     await prisma.calendarEvent.update({ where: { id: item.id }, data: { feishuId: fid } });
   });
+  await prisma.searchIndex.upsert({
+    where: { entityType_entityId: { entityType: "calendar", entityId: item.id } },
+    create: { entityType: "calendar", entityId: item.id, title: item.title, content: item.description },
+    update: { title: item.title, content: item.description },
+  });
   return c.json({ ...item, feishuId }, 201);
 });
 
@@ -35,6 +40,11 @@ app.put("/:id", async (c) => {
   if (body.endTime) data.endTime = new Date(body.endTime);
   const item = await prisma.calendarEvent.update({ where: { id }, data });
   await syncAfterUpdate("calendar", existing?.feishuId ?? null, body);
+  await prisma.searchIndex.upsert({
+    where: { entityType_entityId: { entityType: "calendar", entityId: id } },
+    create: { entityType: "calendar", entityId: id, title: item.title, content: item.description },
+    update: { title: item.title, content: item.description },
+  });
   return c.json(item);
 });
 
@@ -42,6 +52,7 @@ app.delete("/:id", async (c) => {
   const id = c.req.param("id");
   const existing = await prisma.calendarEvent.findUnique({ where: { id } });
   await prisma.calendarEvent.delete({ where: { id } });
+  await prisma.searchIndex.deleteMany({ where: { entityType: "calendar", entityId: id } });
   await syncAfterDelete("calendar", existing?.feishuId ?? null);
   return c.json({ ok: true });
 });

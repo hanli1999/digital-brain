@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { API_BASE_URL } from "@/config/api";
+import { apiFetch } from "@/config/api";
 import type { Tool } from "@/types/api";
 
 const categoryColors: Record<string, string> = {
@@ -28,17 +28,17 @@ export default function ToolsPage() {
 
   const { data: tools = [], isLoading } = useQuery<Tool[]>({
     queryKey: ["tools"],
-    queryFn: () => fetch(`${API_BASE_URL}/tools`).then((r) => r.json()),
+    queryFn: () => apiFetch(`/tools`).then((r) => r.json()),
   });
 
   const createMutation = useMutation({
     mutationFn: (data: { name: string; description: string; category: string; url: string }) =>
-      fetch(`${API_BASE_URL}/tools`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      apiFetch(`/tools`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["tools"] }); setShowNew(false); setName(""); setDesc(""); setUrl(""); toast.success("已添加工具"); },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => fetch(`${API_BASE_URL}/tools/${id}`, { method: "DELETE" }),
+    mutationFn: (id: string) => apiFetch(`/tools/${id}`, { method: "DELETE" }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["tools"] }); setSelectedId(null); toast.success("已删除"); },
     onError: () => toast.error("删除失败"),
   });

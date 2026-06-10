@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { API_BASE_URL } from "@/config/api";
+import { apiFetch } from "@/config/api";
 import type { InboxItem } from "@/types/api";
 
 export default function InboxPage() {
@@ -25,12 +25,12 @@ export default function InboxPage() {
 
   const { data: items = [], isLoading } = useQuery<InboxItem[]>({
     queryKey: ["inbox"],
-    queryFn: () => fetch(`${API_BASE_URL}/inbox`).then((r) => r.json()),
+    queryFn: () => apiFetch(`/inbox`).then((r) => r.json()),
   });
 
   const createMutation = useMutation({
     mutationFn: (data: { title: string; content: string; tags: string }) =>
-      fetch(`${API_BASE_URL}/inbox`, {
+      apiFetch(`/inbox`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...data, source: "manual" }),
       }).then((r) => r.json()),
@@ -42,7 +42,7 @@ export default function InboxPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => fetch(`${API_BASE_URL}/inbox/${id}`, { method: "DELETE" }),
+    mutationFn: (id: string) => apiFetch(`/inbox/${id}`, { method: "DELETE" }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inbox"] });
       setSelectedId(null);

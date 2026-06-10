@@ -5,7 +5,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { API_BASE_URL } from "@/config/api";
+import { apiFetch } from "@/config/api";
 import type { Metric } from "@/types/api";
 
 export default function ResourcesPage() {
@@ -18,17 +18,17 @@ export default function ResourcesPage() {
 
   const { data: resources = [], isLoading } = useQuery<Metric[]>({
     queryKey: ["resources"],
-    queryFn: () => fetch(`${API_BASE_URL}/resources`).then((r) => r.json()),
+    queryFn: () => apiFetch(`/resources`).then((r) => r.json()),
   });
 
   const createMutation = useMutation({
     mutationFn: (data: { name: string; value: number; unit: string; category: string }) =>
-      fetch(`${API_BASE_URL}/resources`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      apiFetch(`/resources`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["resources"] }); setShowNew(false); setName(""); setValue(""); setUnit(""); setCategory(""); },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => fetch(`${API_BASE_URL}/resources/${id}`, { method: "DELETE" }),
+    mutationFn: (id: string) => apiFetch(`/resources/${id}`, { method: "DELETE" }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["resources"] }),
   });
 

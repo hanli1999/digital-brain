@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, Link } from "react-router-dom";
 import { Suspense } from "react";
-import { API_BASE_URL } from "@/config/api";
+import { apiFetch } from "@/config/api";
 import type { SearchResult } from "@/types/api";
 
 function SearchResults() {
@@ -10,7 +10,7 @@ function SearchResults() {
 
   const { data: results = [], isLoading } = useQuery<SearchResult[]>({
     queryKey: ["search", q],
-    queryFn: () => fetch(`${API_BASE_URL}/search?q=${encodeURIComponent(q)}`).then((r) => r.json()),
+    queryFn: () => apiFetch(`/search?q=${encodeURIComponent(q)}`).then((r) => r.json()),
     enabled: q.length > 0,
   });
 

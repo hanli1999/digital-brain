@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { API_BASE_URL } from "@/config/api";
+import { apiFetch } from "@/config/api";
 
 const targets = [
   { key: "task", label: "入库到任务管理" },
@@ -16,7 +16,7 @@ export function RouteButton({ inboxId }: { inboxId: string }) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: (target: string) =>
-      fetch(`${API_BASE_URL}/inbox/${inboxId}/route`, {
+      apiFetch(`/inbox/${inboxId}/route`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ routeTarget: target }),

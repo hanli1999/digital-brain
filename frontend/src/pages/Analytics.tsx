@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { API_BASE_URL } from "@/config/api";
+import { apiFetch } from "@/config/api";
 import type { Metric } from "@/types/api";
 
 export default function AnalyticsPage() {
@@ -22,12 +22,12 @@ export default function AnalyticsPage() {
 
   const { data: metrics = [], isLoading } = useQuery<Metric[]>({
     queryKey: ["metrics"],
-    queryFn: () => fetch(`${API_BASE_URL}/metrics`).then((r) => r.json()),
+    queryFn: () => apiFetch(`/metrics`).then((r) => r.json()),
   });
 
   const createMutation = useMutation({
     mutationFn: (data: { name: string; value: number; unit: string; category: string }) =>
-      fetch(`${API_BASE_URL}/metrics`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      apiFetch(`/metrics`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["metrics"] });
       setShowNew(false);
@@ -40,7 +40,7 @@ export default function AnalyticsPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => fetch(`${API_BASE_URL}/metrics/${id}`, { method: "DELETE" }),
+    mutationFn: (id: string) => apiFetch(`/metrics/${id}`, { method: "DELETE" }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["metrics"] }); setSelectedId(null); toast.success("已删除"); },
     onError: () => toast.error("删除失败"),
   });

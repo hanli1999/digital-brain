@@ -43,6 +43,11 @@ app.put("/:id", async (c) => {
     data: { name: body.name, description: body.description, category: body.category, url: body.url, tags: body.tags },
   });
   await syncAfterUpdate("tool", existing?.feishuId ?? null, body);
+  await prisma.searchIndex.upsert({
+    where: { entityType_entityId: { entityType: "tool", entityId: id } },
+    create: { entityType: "tool", entityId: id, title: item.name, content: item.description, tags: item.tags },
+    update: { title: item.name, content: item.description, tags: item.tags },
+  });
   return c.json(item);
 });
 
@@ -50,6 +55,7 @@ app.delete("/:id", async (c) => {
   const id = c.req.param("id");
   const existing = await prisma.tool.findUnique({ where: { id } });
   await prisma.tool.delete({ where: { id } });
+  await prisma.searchIndex.deleteMany({ where: { entityType: "tool", entityId: id } });
   await syncAfterDelete("tool", existing?.feishuId ?? null);
   return c.json({ ok: true });
 });
