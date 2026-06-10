@@ -139,9 +139,12 @@ export default function InboxPage() {
           <div className="mt-3 p-3 border rounded-md bg-background space-y-2 text-sm">
             <div className="flex items-center justify-between">
               <span className="font-semibold text-base">{parsed.title}</span>
-              <span className="text-xs text-muted-foreground">分类：{parsed.category}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">分类：{parsed.category}</span>
+                <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">权重 10</span>
+              </div>
             </div>
-            <p className="text-muted-foreground">{parsed.abstract}</p>
+            <p className="text-muted-foreground leading-relaxed">{parsed.abstract}</p>
             <div className="flex items-center gap-2 flex-wrap">
               {parsed.tags.map((t) => (
                 <span key={t} className="text-xs bg-muted px-2 py-0.5 rounded-full">{t}</span>
@@ -218,6 +221,11 @@ export default function InboxPage() {
                   <span>{item.source === "manual" ? "手动" : item.source === "feishu-bot" ? "飞书机器人" : "飞书导入"}</span>
                   <span>{new Date(item.createdAt).toLocaleDateString("zh-CN")}</span>
                 </div>
+                {item.status === "pending" && (
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <RouteButton inboxId={item.id} title={item.title} content={item.content} />
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
