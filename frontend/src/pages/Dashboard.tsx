@@ -37,6 +37,17 @@ export default function Dashboard() {
         </Card>
       </div>
 
+      {stats && stats.pendingInbox === 0 && stats.todoTasks === 0 && (
+        <div className="mb-6 rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 p-8 text-center">
+          <p className="text-base font-medium text-primary">欢迎使用数字大脑</p>
+          <p className="text-sm text-muted-foreground mt-2">
+            从
+            <Link to="/inbox" className="text-primary underline mx-1">收件箱</Link>
+            开始添加你的第一条记录
+          </p>
+        </div>
+      )}
+
       <h2 className="text-sm font-semibold text-muted-foreground mb-3">快捷入口</h2>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         {quickLinks.map((link) => (
