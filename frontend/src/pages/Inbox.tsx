@@ -13,6 +13,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { apiFetch } from "@/config/api";
 import type { InboxItem } from "@/types/api";
+import { Sparkles, Loader2 } from "lucide-react";
+
+interface ParsedCard {
+  title: string;
+  category: string;
+  tags: string[];
+  routeTarget: string;
+  mood: string;
+  abstract: string;
+  suggestion: string;
+}
 
 export default function InboxPage() {
   const queryClient = useQueryClient();
@@ -22,6 +33,9 @@ export default function InboxPage() {
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
   const [newTags, setNewTags] = useState("");
+  const [nlInput, setNlInput] = useState("");
+  const [parsing, setParsing] = useState(false);
+  const [parsed, setParsed] = useState<ParsedCard | null>(null);
 
   const { data: items = [], isLoading } = useQuery<InboxItem[]>({
     queryKey: ["inbox"],
@@ -29,7 +43,7 @@ export default function InboxPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: { title: string; content: string; tags: string }) =>
+    mutationFn: (data: { title: string; content: string; tags: string; status?: string; routeTarget?: string }) =>
       apiFetch(`/inbox`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...data, source: "manual" }),
@@ -37,6 +51,7 @@ export default function InboxPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inbox"] });
       setShowNewItem(false); setNewTitle(""); setNewContent(""); setNewTags("");
+      setNlInput(""); setParsed(null);
       toast.success("已添加到收件箱");
     },
   });
@@ -51,6 +66,36 @@ export default function InboxPage() {
     onError: () => toast.error("删除失败"),
   });
 
+  const handleParse = async () => {
+    if (!nlInput.trim()) return;
+    setParsing(true);
+    try {
+      const res = await apiFetch(`/ai/parse-card`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: nlInput }),
+      });
+      const data = await res.json();
+      if (data.error) { toast.error(data.error); return; }
+      setParsed(data);
+    } catch {
+      toast.error("AI 解析失败，请重试");
+    } finally {
+      setParsing(false);
+    }
+  };
+
+  const handleConfirmParsed = () => {
+    if (!parsed) return;
+    createMutation.mutate({
+      title: parsed.title,
+      content: parsed.abstract + (parsed.suggestion ? `\n\n建议：${parsed.suggestion}` : ""),
+      tags: JSON.stringify(parsed.tags),
+      status: "pending",
+      routeTarget: parsed.routeTarget,
+    });
+  };
+
   const selectedItem = items.find((i) => i.id === selectedId);
   const filteredItems = activeTag
     ? items.filter((i) => { try { return JSON.parse(i.tags).includes(activeTag); } catch { return false; } })
@@ -61,10 +106,58 @@ export default function InboxPage() {
 
   return (
     <div>
+      {/* Natural Language Input */}
+      <div className="mb-4 p-3 border rounded-lg bg-muted/30">
+        <div className="flex gap-2">
+          <Textarea
+            placeholder="直接输入... 比如：'今天看到一个不错的AI视频剪辑工具，叫剪映专业版，支持自动字幕和多轨道编辑'"
+            value={nlInput}
+            onChange={(e) => { setNlInput(e.target.value); setParsed(null); }}
+            className="min-h-[48px] text-sm"
+            rows={2}
+            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleParse(); } }}
+          />
+          <Button
+            size="sm"
+            onClick={handleParse}
+            disabled={parsing || !nlInput.trim()}
+            className="shrink-0"
+          >
+            {parsing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+            <span className="ml-1">{parsing ? "解析中..." : "AI 解析"}</span>
+          </Button>
+        </div>
+
+        {parsed && (
+          <div className="mt-3 p-3 border rounded-md bg-background space-y-2 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-base">{parsed.title}</span>
+              <span className="text-xs text-muted-foreground">分类：{parsed.category}</span>
+            </div>
+            <p className="text-muted-foreground">{parsed.abstract}</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              {parsed.tags.map((t) => (
+                <span key={t} className="text-xs bg-muted px-2 py-0.5 rounded-full">{t}</span>
+              ))}
+              <span className="text-xs text-muted-foreground">|</span>
+              <span className="text-xs">心情：{parsed.mood}</span>
+              <span className="text-xs">→ 归库：{parsed.routeTarget}</span>
+            </div>
+            <p className="text-xs text-blue-600 dark:text-blue-400">{parsed.suggestion}</p>
+            <div className="flex gap-2 pt-1">
+              <Button size="sm" onClick={handleConfirmParsed} disabled={createMutation.isPending}>
+                {createMutation.isPending ? "加入中..." : "确认入库"}
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setParsed(null)}>重新输入</Button>
+            </div>
+          </div>
+        )}
+      </div>
+
       <div className="flex items-center justify-between mb-4">
         <FilterPanel tags={allTags} activeTag={activeTag} onTagChange={setActiveTag} />
         <Dialog open={showNewItem} onOpenChange={setShowNewItem}>
-          <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/80 h-8 px-3 text-xs font-medium transition-all">+ 新建条目</DialogTrigger>
+          <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/80 h-8 px-3 text-xs font-medium transition-all">+ 高级新建</DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>新建收件箱条目</DialogTitle></DialogHeader>
             <div className="space-y-3">
@@ -78,7 +171,7 @@ export default function InboxPage() {
       </div>
 
       {filteredItems.length === 0 ? (
-        <EmptyState title="收件箱为空" description="点击右上角新建条目，或等待飞书消息自动导入" actionLabel="新建条目" onAction={() => setShowNewItem(true)} />
+        <EmptyState title="收件箱为空" description="在上方输入框直接用自然语言记录，AI 会自动分类" actionLabel="手动新建" onAction={() => setShowNewItem(true)} />
       ) : (
         <DataTable
           columns={[
