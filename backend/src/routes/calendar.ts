@@ -1,76 +1,59 @@
 import { Hono } from "hono";
-import { listRecords, getRecord, createRecord, updateRecord, deleteRecord, type FeishuRecord } from "../lib/feishu.js";
+import { listRecords, getRecord, createRecord, updateRecord, deleteRecord } from "../lib/feishu.js";
+import { toEnglish, toFeishuFields } from "../lib/field-map.js";
 
 const TABLE = "tblxDBsdrChYhST8";
-
-const CN_TO_EN: Record<string, string> = {
-  "任务标题": "title",
-  "任务内容": "content",
-  "任务描述": "description",
-  "任务状态": "status",
-  "任务优先级": "priority",
-  "任务开始时间": "startTime",
-  "任务截止时间": "endTime",
-  "是否为全天任务": "allDay",
-  "所属项目ID": "projectId",
-  "创建时间": "createdAt",
-};
-
-function toFrontend(r: FeishuRecord) {
-  const result: Record<string, unknown> = { id: r.record_id };
-  for (const [key, value] of Object.entries(r.fields)) {
-    result[CN_TO_EN[key] || key] = value;
-  }
-  return result;
-}
 
 const app = new Hono();
 
 app.get("/", async (c) => {
   const records = await listRecords(TABLE);
-  return c.json(records.map(toFrontend));
+  const mapped = await Promise.all(records.map((r) => toEnglish(TABLE, r)));
+  return c.json(mapped);
 });
 
 app.post("/", async (c) => {
   const body = await c.req.json();
-  const fields: Record<string, unknown> = {};
-  if (body.title) fields["任务标题"] = body.title;
-  if (body.content) fields["任务内容"] = body.content;
-  if (body.description) fields["任务描述"] = body.description;
-  if (body.status) fields["任务状态"] = body.status;
-  if (body.priority) fields["任务优先级"] = body.priority;
-  if (body.startTime) fields["任务开始时间"] = body.startTime;
-  if (body.endTime) fields["任务截止时间"] = body.endTime;
-  if (body.allDay !== undefined) fields["是否为全天任务"] = body.allDay;
-  if (body.projectId) fields["所属项目ID"] = body.projectId;
+  const input: Record<string, unknown> = {};
+  if (body.title) input.title = body.title;
+  if (body.content) input.content = body.content;
+  if (body.description) input.description = body.description;
+  if (body.status) input.status = body.status;
+  if (body.priority) input.priority = body.priority;
+  if (body.startTime) input.startTime = body.startTime;
+  if (body.endTime) input.endTime = body.endTime;
+  if (body.allDay !== undefined) input.allDay = body.allDay;
+  if (body.projectId) input.projectId = body.projectId;
 
+  const fields = await toFeishuFields(TABLE, input);
   const record = await createRecord(TABLE, fields);
   if (!record) return c.json({ error: "Failed to create" }, 500);
-  return c.json(toFrontend(record), 201);
+  return c.json(await toEnglish(TABLE, record), 201);
 });
 
 app.get("/:id", async (c) => {
   const record = await getRecord(TABLE, c.req.param("id"));
   if (!record) return c.json({ error: "Not found" }, 404);
-  return c.json(toFrontend(record));
+  return c.json(await toEnglish(TABLE, record));
 });
 
 app.put("/:id", async (c) => {
   const body = await c.req.json();
-  const fields: Record<string, unknown> = {};
-  if (body.title !== undefined) fields["任务标题"] = body.title;
-  if (body.content !== undefined) fields["任务内容"] = body.content;
-  if (body.description !== undefined) fields["任务描述"] = body.description;
-  if (body.status !== undefined) fields["任务状态"] = body.status;
-  if (body.priority !== undefined) fields["任务优先级"] = body.priority;
-  if (body.startTime !== undefined) fields["任务开始时间"] = body.startTime;
-  if (body.endTime !== undefined) fields["任务截止时间"] = body.endTime;
-  if (body.allDay !== undefined) fields["是否为全天任务"] = body.allDay;
-  if (body.projectId !== undefined) fields["所属项目ID"] = body.projectId;
+  const input: Record<string, unknown> = {};
+  if (body.title !== undefined) input.title = body.title;
+  if (body.content !== undefined) input.content = body.content;
+  if (body.description !== undefined) input.description = body.description;
+  if (body.status !== undefined) input.status = body.status;
+  if (body.priority !== undefined) input.priority = body.priority;
+  if (body.startTime !== undefined) input.startTime = body.startTime;
+  if (body.endTime !== undefined) input.endTime = body.endTime;
+  if (body.allDay !== undefined) input.allDay = body.allDay;
+  if (body.projectId !== undefined) input.projectId = body.projectId;
 
+  const fields = await toFeishuFields(TABLE, input);
   const record = await updateRecord(TABLE, c.req.param("id"), fields);
   if (!record) return c.json({ error: "Update failed" }, 500);
-  return c.json(toFrontend(record));
+  return c.json(await toEnglish(TABLE, record));
 });
 
 app.delete("/:id", async (c) => {

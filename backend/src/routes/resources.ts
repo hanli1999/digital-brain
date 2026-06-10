@@ -1,67 +1,53 @@
 import { Hono } from "hono";
-import { listRecords, getRecord, createRecord, updateRecord, deleteRecord, type FeishuRecord } from "../lib/feishu.js";
+import { listRecords, getRecord, createRecord, updateRecord, deleteRecord } from "../lib/feishu.js";
+import { toEnglish, toFeishuFields } from "../lib/field-map.js";
 
 const TABLE = "tbl6WHGWD9DKLuJ5";
-
-const CN_TO_EN: Record<string, string> = {
-  "资源名称": "name",
-  "获取链接": "url",
-  "资源类型": "type",
-  "当前存量": "stock",
-  "资源状态": "status",
-  "资源详情": "detail",
-  "创建时间": "createdAt",
-};
-
-function toFrontend(r: FeishuRecord) {
-  const result: Record<string, unknown> = { id: r.record_id };
-  for (const [key, value] of Object.entries(r.fields)) {
-    result[CN_TO_EN[key] || key] = value;
-  }
-  return result;
-}
 
 const app = new Hono();
 
 app.get("/", async (c) => {
   const records = await listRecords(TABLE);
-  return c.json(records.map(toFrontend));
+  const mapped = await Promise.all(records.map((r) => toEnglish(TABLE, r)));
+  return c.json(mapped);
 });
 
 app.post("/", async (c) => {
   const body = await c.req.json();
-  const fields: Record<string, unknown> = {};
-  if (body.name) fields["资源名称"] = body.name;
-  if (body.url) fields["获取链接"] = body.url;
-  if (body.type) fields["资源类型"] = body.type;
-  if (body.stock !== undefined) fields["当前存量"] = body.stock;
-  if (body.status) fields["资源状态"] = body.status;
-  if (body.detail) fields["资源详情"] = body.detail;
+  const input: Record<string, unknown> = {};
+  if (body.name) input.name = body.name;
+  if (body.url) input.url = body.url;
+  if (body.type) input.type = body.type;
+  if (body.stock !== undefined) input.stock = body.stock;
+  if (body.status) input.status = body.status;
+  if (body.detail) input.detail = body.detail;
 
+  const fields = await toFeishuFields(TABLE, input);
   const record = await createRecord(TABLE, fields);
   if (!record) return c.json({ error: "Failed to create" }, 500);
-  return c.json(toFrontend(record), 201);
+  return c.json(await toEnglish(TABLE, record), 201);
 });
 
 app.get("/:id", async (c) => {
   const record = await getRecord(TABLE, c.req.param("id"));
   if (!record) return c.json({ error: "Not found" }, 404);
-  return c.json(toFrontend(record));
+  return c.json(await toEnglish(TABLE, record));
 });
 
 app.put("/:id", async (c) => {
   const body = await c.req.json();
-  const fields: Record<string, unknown> = {};
-  if (body.name !== undefined) fields["资源名称"] = body.name;
-  if (body.url !== undefined) fields["获取链接"] = body.url;
-  if (body.type !== undefined) fields["资源类型"] = body.type;
-  if (body.stock !== undefined) fields["当前存量"] = body.stock;
-  if (body.status !== undefined) fields["资源状态"] = body.status;
-  if (body.detail !== undefined) fields["资源详情"] = body.detail;
+  const input: Record<string, unknown> = {};
+  if (body.name !== undefined) input.name = body.name;
+  if (body.url !== undefined) input.url = body.url;
+  if (body.type !== undefined) input.type = body.type;
+  if (body.stock !== undefined) input.stock = body.stock;
+  if (body.status !== undefined) input.status = body.status;
+  if (body.detail !== undefined) input.detail = body.detail;
 
+  const fields = await toFeishuFields(TABLE, input);
   const record = await updateRecord(TABLE, c.req.param("id"), fields);
   if (!record) return c.json({ error: "Update failed" }, 500);
-  return c.json(toFrontend(record));
+  return c.json(await toEnglish(TABLE, record));
 });
 
 app.delete("/:id", async (c) => {

@@ -1,85 +1,65 @@
 import { Hono } from "hono";
-import { listRecords, getRecord, createRecord, updateRecord, deleteRecord, type FeishuRecord } from "../lib/feishu.js";
+import { listRecords, getRecord, createRecord, updateRecord, deleteRecord } from "../lib/feishu.js";
+import { toEnglish, toFeishuFields } from "../lib/field-map.js";
 
 const TABLE = "tbl2pG26LdF3c3cX";
-
-const CN_TO_EN: Record<string, string> = {
-  "收集内容": "title",
-  "附件识别结果": "content",
-  "处理状态": "status",
-  "初步分类": "category",
-  "核心词": "tags",
-  "来源": "source",
-  "情绪色": "mood",
-  "归入建议": "routeTarget",
-  "归位去处": "routedTo",
-  "来源(1)": "sourceUrl",
-  "炼化结果": "aiSummary",
-  "收集时间": "collectedAt",
-  "创建时间": "createdAt",
-};
-
-function toFrontend(r: FeishuRecord) {
-  const result: Record<string, unknown> = { id: r.record_id };
-  for (const [key, value] of Object.entries(r.fields)) {
-    result[CN_TO_EN[key] || key] = value;
-  }
-  return result;
-}
 
 const app = new Hono();
 
 app.get("/", async (c) => {
   const records = await listRecords(TABLE);
-  return c.json(records.map(toFrontend));
+  const mapped = await Promise.all(records.map((r) => toEnglish(TABLE, r)));
+  return c.json(mapped);
 });
 
 app.post("/", async (c) => {
   const body = await c.req.json();
-  const fields: Record<string, unknown> = {};
-  if (body.title) fields["收集内容"] = body.title;
-  if (body.content) fields["附件识别结果"] = body.content;
-  if (body.status) fields["处理状态"] = body.status;
-  if (body.category) fields["初步分类"] = body.category;
-  if (body.tags) fields["核心词"] = body.tags;
-  if (body.source) fields["来源"] = body.source;
-  if (body.mood) fields["情绪色"] = body.mood;
-  if (body.routeTarget) fields["归入建议"] = body.routeTarget;
-  if (body.routedTo) fields["归位去处"] = body.routedTo;
-  if (body.sourceUrl) fields["来源(1)"] = body.sourceUrl;
-  if (body.aiSummary) fields["炼化结果"] = body.aiSummary;
-  if (body.collectedAt) fields["收集时间"] = body.collectedAt;
+  const input: Record<string, unknown> = {};
+  if (body.title) input.title = body.title;
+  if (body.content) input.content = body.content;
+  if (body.status) input.status = body.status;
+  if (body.category) input.category = body.category;
+  if (body.tags) input.tags = body.tags;
+  if (body.source) input.source = body.source;
+  if (body.mood) input.mood = body.mood;
+  if (body.routeTarget) input.routeTarget = body.routeTarget;
+  if (body.routedTo) input.routedTo = body.routedTo;
+  if (body.sourceUrl) input.sourceUrl = body.sourceUrl;
+  if (body.aiSummary) input.aiSummary = body.aiSummary;
+  if (body.collectedAt) input.collectedAt = body.collectedAt;
 
+  const fields = await toFeishuFields(TABLE, input);
   const record = await createRecord(TABLE, fields);
   if (!record) return c.json({ error: "Failed to create" }, 500);
-  return c.json(toFrontend(record), 201);
+  return c.json(await toEnglish(TABLE, record), 201);
 });
 
 app.get("/:id", async (c) => {
   const record = await getRecord(TABLE, c.req.param("id"));
   if (!record) return c.json({ error: "Not found" }, 404);
-  return c.json(toFrontend(record));
+  return c.json(await toEnglish(TABLE, record));
 });
 
 app.put("/:id", async (c) => {
   const body = await c.req.json();
-  const fields: Record<string, unknown> = {};
-  if (body.title !== undefined) fields["收集内容"] = body.title;
-  if (body.content !== undefined) fields["附件识别结果"] = body.content;
-  if (body.status !== undefined) fields["处理状态"] = body.status;
-  if (body.category !== undefined) fields["初步分类"] = body.category;
-  if (body.tags !== undefined) fields["核心词"] = body.tags;
-  if (body.source !== undefined) fields["来源"] = body.source;
-  if (body.mood !== undefined) fields["情绪色"] = body.mood;
-  if (body.routeTarget !== undefined) fields["归入建议"] = body.routeTarget;
-  if (body.routedTo !== undefined) fields["归位去处"] = body.routedTo;
-  if (body.sourceUrl !== undefined) fields["来源(1)"] = body.sourceUrl;
-  if (body.aiSummary !== undefined) fields["炼化结果"] = body.aiSummary;
-  if (body.collectedAt !== undefined) fields["收集时间"] = body.collectedAt;
+  const input: Record<string, unknown> = {};
+  if (body.title !== undefined) input.title = body.title;
+  if (body.content !== undefined) input.content = body.content;
+  if (body.status !== undefined) input.status = body.status;
+  if (body.category !== undefined) input.category = body.category;
+  if (body.tags !== undefined) input.tags = body.tags;
+  if (body.source !== undefined) input.source = body.source;
+  if (body.mood !== undefined) input.mood = body.mood;
+  if (body.routeTarget !== undefined) input.routeTarget = body.routeTarget;
+  if (body.routedTo !== undefined) input.routedTo = body.routedTo;
+  if (body.sourceUrl !== undefined) input.sourceUrl = body.sourceUrl;
+  if (body.aiSummary !== undefined) input.aiSummary = body.aiSummary;
+  if (body.collectedAt !== undefined) input.collectedAt = body.collectedAt;
 
+  const fields = await toFeishuFields(TABLE, input);
   const record = await updateRecord(TABLE, c.req.param("id"), fields);
   if (!record) return c.json({ error: "Update failed" }, 500);
-  return c.json(toFrontend(record));
+  return c.json(await toEnglish(TABLE, record));
 });
 
 app.delete("/:id", async (c) => {
@@ -93,15 +73,16 @@ app.post("/:id/route", async (c) => {
   const target = body.routeTarget as string;
   if (!target) return c.json({ error: "Missing routeTarget" }, 400);
 
-  const fields: Record<string, unknown> = {
-    "归入建议": target,
-    "处理状态": "routed",
-    "归位去处": target,
+  const input: Record<string, unknown> = {
+    routeTarget: target,
+    status: "routed",
+    routedTo: target,
   };
 
+  const fields = await toFeishuFields(TABLE, input);
   const record = await updateRecord(TABLE, c.req.param("id"), fields);
   if (!record) return c.json({ error: "Route failed" }, 500);
-  return c.json({ inbox: toFrontend(record), routedId: target, target });
+  return c.json({ inbox: await toEnglish(TABLE, record), routedId: target, target });
 });
 
 export default app;
