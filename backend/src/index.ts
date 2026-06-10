@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
+import { readFileSync } from "node:fs";
 import { authMiddleware } from "./lib/auth-middleware.js";
 
 import authRoutes from "./routes/auth.js";
@@ -69,6 +70,13 @@ app.use("/api/sync/*", authMiddleware);
 app.route("/api/sync", syncRoutes);
 app.use("/api/webhook/*", authMiddleware);
 app.route("/api/webhook", webhookRoutes);
+
+// 静态文件服务 — 前端产物（生产模式）
+app.use("/assets/*", serveStatic({ root: "../frontend/dist/" }));
+app.get("/*", (c) => {
+  const html = readFileSync("../frontend/dist/index.html", "utf-8");
+  return c.html(html);
+});
 
 const port = Number(process.env.PORT) || 3001;
 console.log(`Backend running on http://localhost:${port}`);
