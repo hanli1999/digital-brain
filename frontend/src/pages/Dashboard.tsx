@@ -24,17 +24,25 @@ export default function Dashboard() {
   }>({
     queryKey: ["dashboard"],
     queryFn: async () => {
+      const safeFetch = async <T,>(path: string): Promise<T[]> => {
+        try {
+          const r = await apiFetch(path);
+          return r.ok ? r.json() as Promise<T[]> : [];
+        } catch {
+          return [];
+        }
+      };
       const [inbox, tasks, tools, methods, library, files, calendar, resources, aiEngine, insights] = await Promise.all([
-        apiFetch(`/inbox`).then((r) => r.json()) as Promise<InboxItem[]>,
-        apiFetch(`/tasks`).then((r) => r.json()) as Promise<Task[]>,
-        apiFetch(`/tools`).then((r) => r.ok ? r.json() : []) as Promise<unknown[]>,
-        apiFetch(`/methods`).then((r) => r.ok ? r.json() : []) as Promise<unknown[]>,
-        apiFetch(`/library`).then((r) => r.ok ? r.json() : []) as Promise<unknown[]>,
-        apiFetch(`/files`).then((r) => r.ok ? r.json() : []) as Promise<unknown[]>,
-        apiFetch(`/calendar`).then((r) => r.ok ? r.json() : []) as Promise<unknown[]>,
-        apiFetch(`/resources`).then((r) => r.ok ? r.json() : []) as Promise<unknown[]>,
-        apiFetch(`/ai-engine`).then((r) => r.ok ? r.json() : []) as Promise<unknown[]>,
-        apiFetch(`/insight`).then((r) => r.ok ? r.json() : []) as Promise<unknown[]>,
+        safeFetch<InboxItem>("/inbox"),
+        safeFetch<Task>("/tasks"),
+        safeFetch("/tools"),
+        safeFetch("/methods"),
+        safeFetch("/library"),
+        safeFetch("/files"),
+        safeFetch("/calendar"),
+        safeFetch("/resources"),
+        safeFetch("/ai-engine"),
+        safeFetch("/insight"),
       ]);
 
       const pending = inbox.filter((i) => i.status === "pending").length;

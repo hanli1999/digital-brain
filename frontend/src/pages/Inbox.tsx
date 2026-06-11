@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { apiFetch } from "@/config/api";
 import type { InboxItem } from "@/types/api";
-import { Sparkles, Loader2, LayoutGrid, List } from "lucide-react";
+import { Magic1Line, Loading3Line, LayoutGridLine, ListCheckLine } from "@mingcute/react";
 import { stripMarkdown, safeDate } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -131,7 +131,7 @@ export default function InboxPage() {
             disabled={parsing || !nlInput.trim()}
             className="shrink-0 shadow-[0_0_12px_var(--primary)]/20"
           >
-            {parsing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+            {parsing ? <Loading3Line className="h-4 w-4 animate-spin" /> : <Magic1Line className="h-4 w-4" />}
             <span className="ml-1">{parsing ? "解析中..." : "AI 解析"}</span>
           </Button>
         </div>
@@ -173,14 +173,14 @@ export default function InboxPage() {
             onClick={() => setViewMode("table")}
             className={`inline-flex items-center justify-center h-7 w-7 rounded-md text-sm transition-colors ${viewMode === "table" ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground"}`}
           >
-            <List className="h-4 w-4" />
+            <ListCheckLine className="h-4 w-4" />
           </button>
           <button
             type="button"
             onClick={() => setViewMode("card")}
             className={`inline-flex items-center justify-center h-7 w-7 rounded-md text-sm transition-colors ${viewMode === "card" ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground"}`}
           >
-            <LayoutGrid className="h-4 w-4" />
+            <LayoutGridLine className="h-4 w-4" />
           </button>
           <Dialog open={showNewItem} onOpenChange={setShowNewItem}>
             <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/80 h-8 px-3 text-xs font-medium transition-all">+ 高级新建</DialogTrigger>

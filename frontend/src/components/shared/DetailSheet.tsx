@@ -4,7 +4,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Trash2, Save } from "lucide-react";
+import { Delete2Line, SaveLine } from "@mingcute/react";
 import { useState } from "react";
 
 interface DetailSheetProps {
@@ -57,7 +57,7 @@ export function DetailSheet({ open, onOpenChange, title, children, onDelete, edi
               )
             )}
             <div className="flex gap-2">
-              <Button size="sm" onClick={handleSave}><Save className="h-3.5 w-3.5 mr-1" />保存</Button>
+              <Button size="sm" onClick={handleSave}><SaveLine className="h-3.5 w-3.5 mr-1" />保存</Button>
               <Button size="sm" variant="outline" onClick={() => setEditing(false)}>取消</Button>
             </div>
           </div>
@@ -70,7 +70,7 @@ export function DetailSheet({ open, onOpenChange, title, children, onDelete, edi
               )}
               {onDelete && (
                 <Button variant="ghost" size="sm" className="text-destructive" onClick={onDelete}>
-                  <Trash2 className="h-3.5 w-3.5 mr-1" />删除
+                  <Delete2Line className="h-3.5 w-3.5 mr-1" />删除
                 </Button>
               )}
             </div>

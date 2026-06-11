@@ -2,7 +2,7 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Delete2Line } from "@mingcute/react";
 import { useState } from "react";
 
 interface Column<T> {
@@ -43,7 +43,7 @@ export function DataTable<T extends { id: string }>({
           disabled={deleting === item.id}
           onClick={(e) => { e.stopPropagation(); setDeleting(item.id); onDelete(item.id); }}
         >
-          <Trash2 className="h-3.5 w-3.5" />
+          <Delete2Line className="h-3.5 w-3.5" />
         </Button>
       ),
     },

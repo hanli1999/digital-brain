@@ -26,10 +26,17 @@ import webhookRoutes from "./routes/webhook.js";
 const app = new Hono();
 
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const ALLOWED_ORIGINS = [FRONTEND_URL, "https://digital-brain-delta.vercel.app", "https://frontend-umber-eta-59.vercel.app", "http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:4173", "http://127.0.0.1:4173"];
+const PREVIEW_ORIGIN_RE = /https:\/\/digital-brain-[a-z0-9]+-hanli-s-projects2\.vercel\.app$/;
+
 app.use(
   "*",
   cors({
-    origin: [FRONTEND_URL, "https://digital-brain-delta.vercel.app", "https://frontend-umber-eta-59.vercel.app", /https:\/\/digital-brain-[a-z0-9]+-hanli-s-projects2\.vercel\.app$/, "http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:4173", "http://127.0.0.1:4173"],
+    origin: (origin: string) => {
+      if (ALLOWED_ORIGINS.includes(origin)) return origin;
+      if (PREVIEW_ORIGIN_RE.test(origin)) return origin;
+      return null;
+    },
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
   })
