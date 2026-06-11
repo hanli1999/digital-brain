@@ -233,11 +233,13 @@ export default function InboxPage() {
       ) : (
         <DataTable
           columns={[
-            { key: "title", header: "标题", cell: (i: InboxItem) => <span className="font-medium">{i.title}</span> },
-            { key: "source", header: "来源", cell: (i: InboxItem) => <span className="text-xs text-muted-foreground">{i.source === "manual" ? "手动" : i.source === "feishu-bot" ? "飞书机器人" : "飞书导入"}</span> },
-            { key: "status", header: "状态", cell: (i: InboxItem) => <StatusBadge status={i.status} /> },
-            { key: "createdAt", header: "时间", cell: (i: InboxItem) => <span className="text-xs text-muted-foreground">{new Date(i.createdAt).toLocaleDateString("zh-CN")}</span> },
-            { key: "actions", header: "操作", cell: (i: InboxItem) => i.status === "pending" ? <RouteButton inboxId={i.id} title={i.title} content={i.content} /> : <span className="text-xs text-muted-foreground">→ {i.routeTarget}</span> },
+            { key: "title", header: "标题", cell: (i: InboxItem) => <span className="font-medium line-clamp-1 max-w-[180px]">{i.title}</span>, className: "min-w-[140px] max-w-[180px]" },
+            { key: "mood", header: "心情", cell: (i: InboxItem) => <span className="text-xs text-muted-foreground whitespace-nowrap">{i.mood || "-"}</span>, className: "whitespace-nowrap" },
+            { key: "aiSummary", header: "AI 摘要", cell: (i: InboxItem) => <span className="text-xs text-muted-foreground line-clamp-1 max-w-[180px]">{i.aiSummary || "-"}</span>, className: "max-w-[180px]" },
+            { key: "source", header: "来源", cell: (i: InboxItem) => <span className="text-xs text-muted-foreground whitespace-nowrap">{i.source === "manual" ? "手动" : i.source === "feishu-bot" ? "飞书机器人" : "飞书导入"}</span>, className: "whitespace-nowrap" },
+            { key: "status", header: "状态", cell: (i: InboxItem) => <StatusBadge status={i.status} />, className: "whitespace-nowrap" },
+            { key: "createdAt", header: "时间", cell: (i: InboxItem) => <span className="text-xs text-muted-foreground whitespace-nowrap">{new Date(i.createdAt).toLocaleDateString("zh-CN")}</span>, className: "whitespace-nowrap" },
+            { key: "actions", header: "操作", cell: (i: InboxItem) => i.status === "pending" ? <RouteButton inboxId={i.id} title={i.title} content={i.content} /> : <span className="text-xs text-muted-foreground">→ {i.routeTarget}</span>, className: "whitespace-nowrap" },
           ]}
           data={filteredItems}
           onRowClick={(i) => setSelectedId(i.id)}
@@ -248,11 +250,19 @@ export default function InboxPage() {
 
       <DetailSheet open={!!selectedItem} onOpenChange={() => setSelectedId(null)} title={selectedItem?.title || "详情"}>
         {selectedItem && (
-          <div className="space-y-4 text-sm">
-            <p className="whitespace-pre-wrap text-muted-foreground">{selectedItem.content}</p>
+          <div className="space-y-3 text-sm">
             <div className="flex items-center gap-2">
               <StatusBadge status={selectedItem.status} />
-              {selectedItem.routeTarget && <span className="text-xs">→ 已入库到 {selectedItem.routeTarget}</span>}
+              {selectedItem.mood && <span className="text-xs text-muted-foreground">心情：{selectedItem.mood}</span>}
+            </div>
+            <p className="whitespace-pre-wrap text-muted-foreground text-xs leading-relaxed">{selectedItem.content}</p>
+            {selectedItem.aiSummary && <div><p className="text-xs text-muted-foreground mb-0.5">AI 摘要</p><p className="text-xs whitespace-pre-wrap leading-relaxed">{selectedItem.aiSummary}</p></div>}
+            {selectedItem.sourceUrl && <div><p className="text-xs text-muted-foreground mb-0.5">来源链接</p><a href={selectedItem.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all text-xs">{selectedItem.sourceUrl}</a></div>}
+            <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+              <div><span className="block mb-0.5">来源</span><span>{selectedItem.source === "manual" ? "手动" : selectedItem.source === "feishu-bot" ? "飞书机器人" : "飞书导入"}</span></div>
+              {selectedItem.routeTarget && <div><span className="block mb-0.5">入库目标</span><span>{selectedItem.routeTarget}</span></div>}
+              {selectedItem.routedTo && <div><span className="block mb-0.5">已入库至</span><span>{selectedItem.routedTo}</span></div>}
+              {selectedItem.collectedAt && <div><span className="block mb-0.5">采集时间</span><span>{selectedItem.collectedAt}</span></div>}
             </div>
             <p className="text-xs text-muted-foreground">创建于 {new Date(selectedItem.createdAt).toLocaleString("zh-CN")}</p>
           </div>

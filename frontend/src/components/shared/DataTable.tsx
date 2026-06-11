@@ -50,11 +50,12 @@ export function DataTable<T extends { id: string }>({
   ] : columns;
 
   return (
+    <div className="w-full overflow-auto rounded-md border">
     <Table>
       <TableHeader>
         <TableRow>
           {allColumns.map((col) => (
-            <TableHead key={col.key} className={col.className}>{col.header}</TableHead>
+            <TableHead key={col.key} className={col.className || ""}>{col.header}</TableHead>
           ))}
         </TableRow>
       </TableHeader>
@@ -62,11 +63,12 @@ export function DataTable<T extends { id: string }>({
         {data.map((item) => (
           <TableRow key={item.id} className={onRowClick ? "cursor-pointer hover:bg-muted/50" : ""} onClick={() => onRowClick?.(item)}>
             {allColumns.map((col) => (
-              <TableCell key={col.key} className={col.className}>{col.cell(item)}</TableCell>
+              <TableCell key={col.key} className={col.className || ""}>{col.cell(item)}</TableCell>
             ))}
           </TableRow>
         ))}
       </TableBody>
     </Table>
+    </div>
   );
 }

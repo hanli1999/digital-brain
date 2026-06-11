@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { DataTable } from "@/components/shared/DataTable";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { DetailSheet } from "@/components/shared/DetailSheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -10,6 +11,7 @@ import { apiFetch } from "@/config/api";
 import type { FileAsset } from "@/types/api";
 
 function formatSize(bytes: number): string {
+  if (!bytes || bytes === 0) return "-";
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -17,6 +19,7 @@ function formatSize(bytes: number): string {
 
 export default function FilesPage() {
   const queryClient = useQueryClient();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -29,16 +32,12 @@ export default function FilesPage() {
   const createMutation = useMutation({
     mutationFn: (data: { filename: string; data: string; mimeType: string }) =>
       apiFetch(`/files/upload`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["files"] });
-      setShowNew(false);
-      toast.success("已上传文件");
-    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["files"] }); setShowNew(false); toast.success("已上传文件"); },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => apiFetch(`/files/${id}`, { method: "DELETE" }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["files"] }); toast.success("已删除"); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["files"] }); setSelectedId(null); toast.success("已删除"); },
     onError: () => toast.error("删除失败"),
   });
 
@@ -55,6 +54,7 @@ export default function FilesPage() {
     reader.readAsDataURL(f);
   };
 
+  const selected = files.find((f) => f.id === selectedId);
   if (isLoading) return <div className="text-center py-12 text-muted-foreground">加载中...</div>;
 
   return (
@@ -80,22 +80,33 @@ export default function FilesPage() {
       ) : (
         <DataTable
           columns={[
-            { key: "filename", header: "文件名", cell: (f) => <span className="font-medium text-sm">{f.filename}</span> },
-            { key: "mimeType", header: "类型", cell: (f) => <span className="text-xs text-muted-foreground">{f.mimeType}</span> },
-            { key: "size", header: "大小", cell: (f) => <span className="text-xs text-muted-foreground">{formatSize(f.size)}</span> },
-            { key: "createdAt", header: "上传时间", cell: (f) => <span className="text-xs text-muted-foreground">{new Date(f.createdAt).toLocaleDateString("zh-CN")}</span> },
-            {
-              key: "actions",
-              header: "操作",
-              cell: (f) => (
-                <Button variant="ghost" size="sm" className="text-xs text-red-500" onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(f.id); }}>删除</Button>
-              ),
-            },
+            { key: "filename", header: "文件名", cell: (f) => <span className="font-medium text-sm whitespace-nowrap">{f.filename || f.text || "-"}</span>, className: "min-w-[150px]" },
+            { key: "text", header: "文本", cell: (f) => <span className="text-xs text-muted-foreground line-clamp-1 max-w-[180px]">{f.text || "-"}</span>, className: "max-w-[180px]" },
+            { key: "date", header: "日期", cell: (f) => <span className="text-xs text-muted-foreground whitespace-nowrap">{f.date || "-"}</span>, className: "whitespace-nowrap" },
+            { key: "mimeType", header: "类型", cell: (f) => <span className="text-xs text-muted-foreground whitespace-nowrap">{f.mimeType || "-"}</span>, className: "whitespace-nowrap" },
+            { key: "size", header: "大小", cell: (f) => <span className="text-xs text-muted-foreground whitespace-nowrap">{formatSize(f.size || 0)}</span>, className: "whitespace-nowrap" },
+            { key: "createdAt", header: "上传时间", cell: (f) => <span className="text-xs text-muted-foreground whitespace-nowrap">{new Date(f.createdAt).toLocaleDateString("zh-CN")}</span>, className: "whitespace-nowrap" },
           ]}
-          data={files}
-          emptyMessage="暂无文件"
+          data={files} onRowClick={(f) => setSelectedId(f.id)} onDelete={(id) => deleteMutation.mutate(id)} emptyMessage="暂无文件"
         />
       )}
+
+      <DetailSheet open={!!selected} onOpenChange={() => setSelectedId(null)} title={selected?.filename || selected?.text || "详情"}
+        onDelete={() => { if (selected) deleteMutation.mutate(selected.id); }}
+      >
+        {selected && (
+          <div className="space-y-3 text-sm">
+            <div><p className="text-xs text-muted-foreground mb-0.5">文件名</p><p className="text-sm font-medium">{selected.filename || "-"}</p></div>
+            {selected.text && <div><p className="text-xs text-muted-foreground mb-0.5">文本</p><p className="text-xs whitespace-pre-wrap leading-relaxed">{selected.text}</p></div>}
+            {selected.date && <div><p className="text-xs text-muted-foreground mb-0.5">日期</p><p className="text-xs">{selected.date}</p></div>}
+            {selected.url && <div><p className="text-xs text-muted-foreground mb-0.5">链接</p><a href={selected.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all text-xs">{selected.url}</a></div>}
+            {selected.attachment && <div><p className="text-xs text-muted-foreground mb-0.5">附件</p><p className="text-xs break-all">{selected.attachment}</p></div>}
+            {selected.mimeType && <div><p className="text-xs text-muted-foreground mb-0.5">类型</p><p className="text-xs">{selected.mimeType}</p></div>}
+            {selected.size != null && <div><p className="text-xs text-muted-foreground mb-0.5">大小</p><p className="text-xs">{formatSize(selected.size)}</p></div>}
+            <div><p className="text-xs text-muted-foreground mb-0.5">上传时间</p><p className="text-xs">{new Date(selected.createdAt).toLocaleString("zh-CN")}</p></div>
+          </div>
+        )}
+      </DetailSheet>
     </div>
   );
 }
