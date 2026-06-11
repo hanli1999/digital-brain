@@ -16,7 +16,12 @@ function yinyueGreeting(): string {
 }
 
 export default function Dashboard() {
-  const { data: stats } = useQuery({
+  const { data: stats } = useQuery<{
+    todayCount: number; pending: number; inProgress: number; completed: number;
+    total: number; processed: number; modules: { key: string; label: string; icon: string; href: string; count: number }[];
+    recent: { title?: string; name?: string; createdAt: string; module?: string }[];
+    refinementRate: number; insights: string[]; stalePendings: number;
+  }>({
     queryKey: ["dashboard"],
     queryFn: async () => {
       const [inbox, tasks, tools, methods, library, files, calendar, resources, aiEngine, insights] = await Promise.all([
@@ -74,17 +79,17 @@ export default function Dashboard() {
         return days > 3;
       }).length;
 
-      const insights: string[] = [];
-      if (stalePendings > 0) insights.push(`有 ${stalePendings} 条收件箱已等待超过3天，要炼化吗？`);
-      if (completed > 0) insights.push(`已完成 ${completed} 个任务，主人效率不错。`);
-      if (todayCount > 0) insights.push(`今天收集了 ${todayCount} 条新内容。`);
+      const generatedInsights: string[] = [];
+      if (stalePendings > 0) generatedInsights.push(`有 ${stalePendings} 条收件箱已等待超过3天，要炼化吗？`);
+      if (completed > 0) generatedInsights.push(`已完成 ${completed} 个任务，主人效率不错。`);
+      if (todayCount > 0) generatedInsights.push(`今天收集了 ${todayCount} 条新内容。`);
       if (emptyModules.length > 0 && emptyModules.length <= 3) {
-        insights.push(`${emptyModules.join("、")} 还是空的，记得充实洞府。`);
+        generatedInsights.push(`${emptyModules.join("、")} 还是空的，记得充实洞府。`);
       } else if (emptyModules.length > 3) {
-        insights.push(`有 ${emptyModules.length} 个模块还是空的，从收件箱入库开始吧。`);
+        generatedInsights.push(`有 ${emptyModules.length} 个模块还是空的，从收件箱入库开始吧。`);
       }
 
-      return { todayCount, pending, inProgress, completed, total: inbox.length, processed, modules, recent, refinementRate, insights, stalePendings };
+      return { todayCount, pending, inProgress, completed, total: inbox.length, processed, modules, recent, refinementRate, insights: generatedInsights, stalePendings };
     },
     refetchInterval: 30000,
   });
