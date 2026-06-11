@@ -12,6 +12,7 @@ export interface RouteTarget {
 export const AI_TARGET_MAP: Record<string, string> = {
   "收件箱": "inbox",
   "任务管理": "tasks",
+  "机缘录": "tasks",          // 机缘录 Feishu 表
   "法器阁": "tools",
   "工具资源库": "tools",
   "功法库": "methods",
@@ -20,8 +21,7 @@ export const AI_TARGET_MAP: Record<string, string> = {
   "资源管理": "resources",
   "AI引擎库": "ai-engine",
   "AI Agent库": "ai-engine",
-  "机缘录": "insight",
-  "洞察": "insight",
+  "洞察": "insight",          // 洞察走 Prisma/SQLite
   "文件管理": "files",
   "日程": "calendar",
   "任务清单": "calendar",
@@ -35,18 +35,22 @@ export const ROUTE_TARGETS: Record<string, RouteTarget> = {
   },
   tasks: {
     tableId: "tblOyyByZYtZz7dA",
-    label: "任务管理",
-    fieldMap: { title: "title", content: "description" },
+    label: "机缘录",
+    // detail=机缘详情（原始内容），AI 生成 action/status
+    fieldMap: { content: "detail", tags: "tags" },
   },
+  // 字段映射说明：inbox 字段 → 目标表字段
+  // 只写"原始内容"字段（给飞书 AI 喂料），AI 生成字段由飞书自动化填充
   tools: {
     tableId: "tbl5r4qZHGnFxUSC",
     label: "工具资源库",
-    fieldMap: { title: "name", content: "corePower", category: "category" },
+    // record=法器记录（原始内容），AI 生成：name/url/corePower/initScript
+    fieldMap: { content: "record", category: "category" },
   },
   methods: {
     tableId: "tbllqXDX0MbmUl07",
     label: "方法流程库",
-    fieldMap: { title: "title", content: "essence" },
+    fieldMap: { title: "title", content: "essence", category: "type" },
   },
   library: {
     tableId: "tblfsL2sxubcpw0i",
@@ -56,17 +60,18 @@ export const ROUTE_TARGETS: Record<string, RouteTarget> = {
   resources: {
     tableId: "tbl6WHGWD9DKLuJ5",
     label: "资源管理",
-    fieldMap: { title: "name", content: "detail" },
+    fieldMap: { title: "name", content: "detail", category: "type" },
   },
   "ai-engine": {
     tableId: "tblBgV1gLsh22qbV",
     label: "AI Agent库",
-    fieldMap: { title: "name", content: "coreIdea", category: "component" },
+    // rawContent=原始内容（喂给飞书 AI），AI 生成：name/coreIdea/features 等
+    fieldMap: { content: "rawContent", category: "component" },
   },
   files: {
     tableId: "tblMWDRaRN2sY2kb",
     label: "文件管理",
-    fieldMap: { title: "text" },
+    fieldMap: { content: "text" },
   },
   calendar: {
     tableId: "tblxDBsdrChYhST8",

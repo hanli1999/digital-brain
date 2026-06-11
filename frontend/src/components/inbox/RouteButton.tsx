@@ -5,9 +5,9 @@ import { toast } from "sonner";
 import { apiFetch } from "@/config/api";
 
 const targets = [
-  { key: "tool", label: "🔧 入库到工具资源库", keywords: ["工具", "软件", "网站", "tool", "平台", "APP"] },
-  { key: "task", label: "📋 入库到任务管理", keywords: ["任务", "做", "完成", "todo", "待办", "处理"] },
-  { key: "method", label: "📐 入库到方法流程库", keywords: ["方法", "流程", "步骤", "workflow", "方案", "策略"] },
+  { key: "tools", label: "🔧 入库到工具资源库", keywords: ["工具", "软件", "网站", "tool", "平台", "APP"] },
+  { key: "tasks", label: "📋 入库到机缘录", keywords: ["任务", "做", "完成", "todo", "待办", "处理", "灵感", "想法"] },
+  { key: "methods", label: "📐 入库到方法流程库", keywords: ["方法", "流程", "步骤", "workflow", "方案", "策略"] },
   { key: "library", label: "📚 入库到文献库", keywords: ["论文", "文章", "文献", "paper", "阅读", "研究"] },
   { key: "ai-engine", label: "🤖 入库到 AI Agent 库", keywords: ["AI", "agent", "智能体", "prompt", "提示词", "模型", "GPT", "LLM"] },
   { key: "resources", label: "📊 入库到资源管理", keywords: ["数据", "指标", "统计", "metric", "资源", "预算"] },
@@ -16,15 +16,16 @@ const targets = [
   { key: "insight", label: "💡 入库到洞察", keywords: ["灵感", "想法", "洞察", "感悟", "观察", "反思", "insight", "笔记", "随记", "领悟"] },
 ];
 
-// AI parse-card 中文名 → 前端 target key
+// AI parse-card 中文名 → 前端 target key (must match backend ROUTE_TARGETS keys)
 const AI_TO_KEY: Record<string, string> = {
-  "收件箱": "inbox", "任务管理": "task",
-  "法器阁": "tool", "工具资源库": "tool",
-  "功法库": "method", "方法流程库": "method", "方法库": "method",
+  "收件箱": "inbox", "任务管理": "tasks",
+  "机缘录": "tasks", "法器阁": "tools",
+  "工具资源库": "tools", "功法库": "methods",
+  "方法流程库": "methods", "方法库": "methods",
   "文献库": "library", "丹房": "library",
   "资源管理": "resources",
   "AI引擎库": "ai-engine", "AI Agent库": "ai-engine",
-  "机缘录": "insight", "洞察": "insight",
+  "洞察": "insight",
   "文件管理": "files",
   "日程": "calendar", "任务清单": "calendar",
 };

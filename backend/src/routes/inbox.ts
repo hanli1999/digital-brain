@@ -125,7 +125,7 @@ app.post("/:id/route", async (c) => {
   const updateFields = await toFeishuFields(TABLE, {
     routeTarget: rawTarget,
     status: "已炼化",
-    routedTo: cfg.label,
+    routedTo: routedId || cfg.label,
   });
   const updated = await updateRecord(TABLE, c.req.param("id"), updateFields);
   if (!updated) return c.json({ error: "Failed to update inbox status" }, 500);
