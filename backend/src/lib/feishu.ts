@@ -27,7 +27,7 @@ export async function feishuRequest(method: string, path: string, body?: unknown
     method,
     headers: {
       Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
+      "Content-Type": "application/json; charset=utf-8",
     },
     body: body ? JSON.stringify(body) : undefined,
   });
