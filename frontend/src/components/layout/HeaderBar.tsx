@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SyncIndicator } from "@/components/shared/SyncIndicator";
 import { useAuth } from "@/lib/AuthContext";
+import { useThemeContext } from "@/components/providers/ThemeProvider";
 import { API_BASE_URL } from "@/config/api";
 
 const pageTitles: Record<string, string> = {
@@ -28,6 +29,7 @@ export function HeaderBar() {
   const pathname = useLocation().pathname;
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { theme, setTheme } = useThemeContext();
   const title = pageTitles[pathname] || "";
   const [online, setOnline] = useState(false);
 
@@ -56,7 +58,15 @@ export function HeaderBar() {
             className="w-48 h-8 text-xs border-primary/10 focus-visible:ring-primary/30 bg-muted/50"
           />
         </form>
-        <SyncIndicator />
+        <button
+            type="button"
+            onClick={() => setTheme(theme === "dark-amber" ? "cave-fresh" : "dark-amber")}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-0.5 rounded border border-border/50"
+            title={theme === "dark-amber" ? "切换到清新洞府" : "切换到暗琥珀"}
+          >
+            {theme === "dark-amber" ? "🌙" : "☀️"}
+          </button>
+          <SyncIndicator />
         <span className="flex items-center gap-1.5 text-xs">
           <span className={`inline-block w-1.5 h-1.5 rounded-full ${online ? "bg-emerald-400 shadow-[0_0_6px_var(--emerald-400)]" : "bg-red-400"}`} />
           <span className={online ? "text-emerald-400/80" : "text-red-400/80"}>银月</span>
