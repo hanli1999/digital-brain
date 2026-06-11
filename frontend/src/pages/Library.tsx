@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { apiFetch } from "@/config/api";
+import { toStr } from "@/lib/utils";
 import type { Document } from "@/types/api";
 
 const typeLabels: Record<string, string> = { paper: "论文", book: "书籍", article: "文章", doc: "文档", other: "其他" };
@@ -81,44 +82,44 @@ export default function LibraryPage() {
       ) : (
         <DataTable
           columns={[
-            { key: "title", header: "标题", cell: (d) => <span className="font-medium line-clamp-1 max-w-[200px]">{d.title}</span>, className: "min-w-[160px] max-w-[200px]" },
-            { key: "author", header: "作者", cell: (d) => <span className="text-xs text-muted-foreground whitespace-nowrap">{d.author || "-"}</span>, className: "whitespace-nowrap" },
-            { key: "type", header: "类型", cell: (d) => <Badge variant="secondary" className="text-xs">{typeLabels[d.type || ""] || d.type || "-"}</Badge>, className: "whitespace-nowrap" },
-            { key: "importance", header: "重要度", cell: (d) => <span className="text-xs text-muted-foreground whitespace-nowrap">{d.importance || "-"}</span>, className: "whitespace-nowrap" },
-            { key: "status", header: "状态", cell: (d) => <span className="text-xs text-muted-foreground whitespace-nowrap">{d.status || "-"}</span>, className: "whitespace-nowrap" },
-            { key: "abstract", header: "摘要", cell: (d) => <span className="text-xs text-muted-foreground line-clamp-2 max-w-[250px]">{d.abstract || "-"}</span>, className: "max-w-[250px]" },
+            { key: "title", header: "标题", cell: (d) => <span className="font-medium line-clamp-1 max-w-[200px]">{toStr(d.title)}</span>, className: "min-w-[160px] max-w-[200px]" },
+            { key: "author", header: "作者", cell: (d) => <span className="text-xs text-muted-foreground whitespace-nowrap">{toStr(d.author) || "-"}</span>, className: "whitespace-nowrap" },
+            { key: "type", header: "类型", cell: (d) => <Badge variant="secondary" className="text-xs">{typeLabels[toStr(d.type) || ""] || toStr(d.type) || "-"}</Badge>, className: "whitespace-nowrap" },
+            { key: "importance", header: "重要度", cell: (d) => <span className="text-xs text-muted-foreground whitespace-nowrap">{toStr(d.importance) || "-"}</span>, className: "whitespace-nowrap" },
+            { key: "status", header: "状态", cell: (d) => <span className="text-xs text-muted-foreground whitespace-nowrap">{toStr(d.status) || "-"}</span>, className: "whitespace-nowrap" },
+            { key: "abstract", header: "摘要", cell: (d) => <span className="text-xs text-muted-foreground line-clamp-2 max-w-[250px]">{toStr(d.abstract) || "-"}</span>, className: "max-w-[250px]" },
             { key: "createdAt", header: "时间", cell: (d) => <span className="text-xs text-muted-foreground whitespace-nowrap">{new Date(d.createdAt).toLocaleDateString("zh-CN")}</span>, className: "whitespace-nowrap" },
           ]}
           data={docs} onRowClick={(d) => setSelectedId(d.id)} onDelete={(id) => deleteMutation.mutate(id)} emptyMessage="暂无文献"
         />
       )}
 
-      <DetailSheet open={!!selected} onOpenChange={() => setSelectedId(null)} title={selected?.title || "详情"}
+      <DetailSheet open={!!selected} onOpenChange={() => setSelectedId(null)} title={toStr(selected?.title) || "详情"}
         editFields={selected ? [
-          { key: "title", label: "标题", value: selected.title || "" },
-          { key: "author", label: "作者", value: selected.author || "" },
-          { key: "url", label: "链接", value: selected.url || "" },
-          { key: "abstract", label: "摘要", value: selected.abstract || "", type: "textarea" },
-          { key: "keywords", label: "关键词", value: selected.keywords || "" },
-          { key: "type", label: "类型", value: selected.type || "" },
-          { key: "importance", label: "重要度", value: selected.importance || "" },
-          { key: "status", label: "状态", value: selected.status || "" },
+          { key: "title", label: "标题", value: toStr(selected.title) },
+          { key: "author", label: "作者", value: toStr(selected.author) },
+          { key: "url", label: "链接", value: toStr(selected.url) },
+          { key: "abstract", label: "摘要", value: toStr(selected.abstract), type: "textarea" },
+          { key: "keywords", label: "关键词", value: toStr(selected.keywords) },
+          { key: "type", label: "类型", value: toStr(selected.type) },
+          { key: "importance", label: "重要度", value: toStr(selected.importance) },
+          { key: "status", label: "状态", value: toStr(selected.status) },
         ] : undefined}
         onSave={(data) => { if (selected) updateMutation.mutate({ id: selected.id, ...data }); }}
         onDelete={() => { if (selected) deleteMutation.mutate(selected.id); }}
       >
         {selected && (
           <div className="space-y-3 text-sm">
-            <div><p className="text-xs text-muted-foreground mb-0.5">标题</p><p className="text-sm font-medium">{selected.title}</p></div>
-            {selected.author && <div><p className="text-xs text-muted-foreground mb-0.5">作者</p><p className="text-xs">{selected.author}</p></div>}
-            {selected.url && <div><p className="text-xs text-muted-foreground mb-0.5">链接</p><a href={selected.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all text-xs">{selected.url}</a></div>}
-            {selected.type && <div><p className="text-xs text-muted-foreground mb-0.5">类型</p><Badge variant="secondary" className="text-xs">{typeLabels[selected.type] || selected.type}</Badge></div>}
-            {selected.importance && <div><p className="text-xs text-muted-foreground mb-0.5">重要度</p><p className="text-xs">{selected.importance}</p></div>}
-            {selected.status && <div><p className="text-xs text-muted-foreground mb-0.5">状态</p><p className="text-xs">{selected.status}</p></div>}
-            {selected.keywords && <div><p className="text-xs text-muted-foreground mb-0.5">关键词</p><p className="text-xs">{selected.keywords}</p></div>}
-            {selected.abstract && <div><p className="text-xs text-muted-foreground mb-0.5">摘要</p><p className="text-xs whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto">{selected.abstract}</p></div>}
-            {selected.snippet && <div><p className="text-xs text-muted-foreground mb-0.5">片段</p><p className="text-xs whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto">{selected.snippet}</p></div>}
-            {selected.publishedAt && <div><p className="text-xs text-muted-foreground mb-0.5">发布日期</p><p className="text-xs">{selected.publishedAt}</p></div>}
+            <div><p className="text-xs text-muted-foreground mb-0.5">标题</p><p className="text-sm font-medium">{toStr(selected.title)}</p></div>
+            {toStr(selected.author) && <div><p className="text-xs text-muted-foreground mb-0.5">作者</p><p className="text-xs">{toStr(selected.author)}</p></div>}
+            {toStr(selected.url) && <div><p className="text-xs text-muted-foreground mb-0.5">链接</p><a href={toStr(selected.url)} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all text-xs">{toStr(selected.url)}</a></div>}
+            {toStr(selected.type) && <div><p className="text-xs text-muted-foreground mb-0.5">类型</p><Badge variant="secondary" className="text-xs">{typeLabels[toStr(selected.type)] || toStr(selected.type)}</Badge></div>}
+            {toStr(selected.importance) && <div><p className="text-xs text-muted-foreground mb-0.5">重要度</p><p className="text-xs">{toStr(selected.importance)}</p></div>}
+            {toStr(selected.status) && <div><p className="text-xs text-muted-foreground mb-0.5">状态</p><p className="text-xs">{toStr(selected.status)}</p></div>}
+            {toStr(selected.keywords) && <div><p className="text-xs text-muted-foreground mb-0.5">关键词</p><p className="text-xs">{toStr(selected.keywords)}</p></div>}
+            {toStr(selected.abstract) && <div><p className="text-xs text-muted-foreground mb-0.5">摘要</p><p className="text-xs whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto">{toStr(selected.abstract)}</p></div>}
+            {toStr(selected.snippet) && <div><p className="text-xs text-muted-foreground mb-0.5">片段</p><p className="text-xs whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto">{toStr(selected.snippet)}</p></div>}
+            {selected.publishedAt && <div><p className="text-xs text-muted-foreground mb-0.5">发布日期</p><p className="text-xs">{toStr(selected.publishedAt)}</p></div>}
             <div><p className="text-xs text-muted-foreground mb-0.5">添加时间</p><p className="text-xs">{new Date(selected.createdAt).toLocaleString("zh-CN")}</p></div>
           </div>
         )}

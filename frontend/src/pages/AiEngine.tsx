@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { apiFetch } from "@/config/api";
+import { toStr } from "@/lib/utils";
 import type { AiMechanism } from "@/types/api";
 
 export default function AiEnginePage() {
@@ -86,44 +87,44 @@ export default function AiEnginePage() {
       ) : (
         <DataTable
           columns={[
-            { key: "name", header: "名称", cell: (m) => <span className="font-medium whitespace-nowrap">{m.name}</span>, className: "min-w-[120px]" },
-            { key: "component", header: "组件", cell: (m) => <span className="text-xs text-muted-foreground line-clamp-1 max-w-[120px]">{m.component || "-"}</span>, className: "max-w-[120px]" },
-            { key: "coreIdea", header: "核心思路", cell: (m) => <span className="text-xs text-muted-foreground line-clamp-2 max-w-[180px]">{m.coreIdea || "-"}</span>, className: "max-w-[180px]" },
-            { key: "features", header: "功能特性", cell: (m) => <span className="text-xs text-muted-foreground line-clamp-2 max-w-[180px]">{m.features || "-"}</span>, className: "max-w-[180px]" },
-            { key: "scenarios", header: "适用场景", cell: (m) => <span className="text-xs text-muted-foreground line-clamp-1 max-w-[150px]">{m.scenarios || "-"}</span>, className: "max-w-[150px]" },
-            { key: "source", header: "来源", cell: (m) => <span className="text-xs text-muted-foreground max-w-[120px] truncate">{m.source || "-"}</span>, className: "max-w-[120px]" },
+            { key: "name", header: "名称", cell: (m) => <span className="font-medium whitespace-nowrap">{toStr(m.name)}</span>, className: "min-w-[120px]" },
+            { key: "component", header: "组件", cell: (m) => <span className="text-xs text-muted-foreground line-clamp-1 max-w-[120px]">{toStr(m.component) || "-"}</span>, className: "max-w-[120px]" },
+            { key: "coreIdea", header: "核心思路", cell: (m) => <span className="text-xs text-muted-foreground line-clamp-2 max-w-[180px]">{toStr(m.coreIdea) || "-"}</span>, className: "max-w-[180px]" },
+            { key: "features", header: "功能特性", cell: (m) => <span className="text-xs text-muted-foreground line-clamp-2 max-w-[180px]">{toStr(m.features) || "-"}</span>, className: "max-w-[180px]" },
+            { key: "scenarios", header: "适用场景", cell: (m) => <span className="text-xs text-muted-foreground line-clamp-1 max-w-[150px]">{toStr(m.scenarios) || "-"}</span>, className: "max-w-[150px]" },
+            { key: "source", header: "来源", cell: (m) => <span className="text-xs text-muted-foreground max-w-[120px] truncate">{toStr(m.source) || "-"}</span>, className: "max-w-[120px]" },
             { key: "createdAt", header: "时间", cell: (m) => <span className="text-xs text-muted-foreground whitespace-nowrap">{new Date(m.createdAt).toLocaleDateString("zh-CN")}</span>, className: "whitespace-nowrap" },
           ]}
           data={items} onRowClick={(m) => setSelectedId(m.id)} onDelete={(id) => deleteMutation.mutate(id)} emptyMessage="暂无机制"
         />
       )}
 
-      <DetailSheet open={!!selected} onOpenChange={() => setSelectedId(null)} title={selected?.name || "详情"}
+      <DetailSheet open={!!selected} onOpenChange={() => setSelectedId(null)} title={toStr(selected?.name) || "详情"}
         editFields={selected ? [
-          { key: "name", label: "名称", value: selected.name || "" },
-          { key: "component", label: "组件", value: selected.component || "" },
-          { key: "coreIdea", label: "核心思路", value: selected.coreIdea || "", type: "textarea" },
-          { key: "features", label: "功能特性", value: selected.features || "", type: "textarea" },
-          { key: "featuresDetail", label: "功能详解", value: selected.featuresDetail || "", type: "textarea" },
-          { key: "examples", label: "示例", value: selected.examples || "", type: "textarea" },
-          { key: "scenarios", label: "适用场景", value: selected.scenarios || "", type: "textarea" },
-          { key: "scenariosDetail", label: "场景详解", value: selected.scenariosDetail || "", type: "textarea" },
-          { key: "source", label: "来源", value: selected.source || "" },
+          { key: "name", label: "名称", value: toStr(selected.name) },
+          { key: "component", label: "组件", value: toStr(selected.component) },
+          { key: "coreIdea", label: "核心思路", value: toStr(selected.coreIdea), type: "textarea" },
+          { key: "features", label: "功能特性", value: toStr(selected.features), type: "textarea" },
+          { key: "featuresDetail", label: "功能详解", value: toStr(selected.featuresDetail), type: "textarea" },
+          { key: "examples", label: "示例", value: toStr(selected.examples), type: "textarea" },
+          { key: "scenarios", label: "适用场景", value: toStr(selected.scenarios), type: "textarea" },
+          { key: "scenariosDetail", label: "场景详解", value: toStr(selected.scenariosDetail), type: "textarea" },
+          { key: "source", label: "来源", value: toStr(selected.source) },
         ] : undefined}
         onSave={(data) => { if (selected) updateMutation.mutate({ id: selected.id, ...data }); }}
         onDelete={() => { if (selected) deleteMutation.mutate(selected.id); }}
       >
         {selected && (
           <div className="space-y-3 text-sm">
-            <div><p className="text-xs text-muted-foreground mb-0.5">名称</p><p className="text-sm font-medium">{selected.name}</p></div>
-            {selected.component && <div><p className="text-xs text-muted-foreground mb-0.5">组件</p><Badge variant="secondary" className="text-xs">{selected.component}</Badge></div>}
-            {selected.coreIdea && <div><p className="text-xs text-muted-foreground mb-0.5">核心思路</p><p className="text-xs whitespace-pre-wrap leading-relaxed">{selected.coreIdea}</p></div>}
-            {selected.features && <div><p className="text-xs text-muted-foreground mb-0.5">功能特性</p><p className="text-xs whitespace-pre-wrap leading-relaxed">{selected.features}</p></div>}
-            {selected.featuresDetail && <div><p className="text-xs text-muted-foreground mb-0.5">功能详解</p><p className="text-xs whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto">{selected.featuresDetail}</p></div>}
-            {selected.examples && <div><p className="text-xs text-muted-foreground mb-0.5">示例</p><p className="text-xs whitespace-pre-wrap leading-relaxed">{selected.examples}</p></div>}
-            {selected.scenarios && <div><p className="text-xs text-muted-foreground mb-0.5">适用场景</p><p className="text-xs whitespace-pre-wrap leading-relaxed">{selected.scenarios}</p></div>}
-            {selected.scenariosDetail && <div><p className="text-xs text-muted-foreground mb-0.5">场景详解</p><p className="text-xs whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto">{selected.scenariosDetail}</p></div>}
-            {selected.source && <div><p className="text-xs text-muted-foreground mb-0.5">来源</p><p className="text-xs">{selected.source}</p></div>}
+            <div><p className="text-xs text-muted-foreground mb-0.5">名称</p><p className="text-sm font-medium">{toStr(selected.name)}</p></div>
+            {toStr(selected.component) && <div><p className="text-xs text-muted-foreground mb-0.5">组件</p><Badge variant="secondary" className="text-xs">{toStr(selected.component)}</Badge></div>}
+            {toStr(selected.coreIdea) && <div><p className="text-xs text-muted-foreground mb-0.5">核心思路</p><p className="text-xs whitespace-pre-wrap leading-relaxed">{toStr(selected.coreIdea)}</p></div>}
+            {toStr(selected.features) && <div><p className="text-xs text-muted-foreground mb-0.5">功能特性</p><p className="text-xs whitespace-pre-wrap leading-relaxed">{toStr(selected.features)}</p></div>}
+            {toStr(selected.featuresDetail) && <div><p className="text-xs text-muted-foreground mb-0.5">功能详解</p><p className="text-xs whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto">{toStr(selected.featuresDetail)}</p></div>}
+            {toStr(selected.examples) && <div><p className="text-xs text-muted-foreground mb-0.5">示例</p><p className="text-xs whitespace-pre-wrap leading-relaxed">{toStr(selected.examples)}</p></div>}
+            {toStr(selected.scenarios) && <div><p className="text-xs text-muted-foreground mb-0.5">适用场景</p><p className="text-xs whitespace-pre-wrap leading-relaxed">{toStr(selected.scenarios)}</p></div>}
+            {toStr(selected.scenariosDetail) && <div><p className="text-xs text-muted-foreground mb-0.5">场景详解</p><p className="text-xs whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto">{toStr(selected.scenariosDetail)}</p></div>}
+            {toStr(selected.source) && <div><p className="text-xs text-muted-foreground mb-0.5">来源</p><p className="text-xs">{toStr(selected.source)}</p></div>}
             <div><p className="text-xs text-muted-foreground mb-0.5">创建时间</p><p className="text-xs">{new Date(selected.createdAt).toLocaleString("zh-CN")}</p></div>
           </div>
         )}

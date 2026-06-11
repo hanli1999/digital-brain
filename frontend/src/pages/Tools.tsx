@@ -10,8 +10,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { apiFetch } from "@/config/api";
+import { toStr } from "@/lib/utils";
 import type { Tool } from "@/types/api";
 
+// 飞书API字段值可能是对象 {text, link} 而非纯字符串，toStr归一化
 const categoryColors: Record<string, string> = {
   dev: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
   design: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
@@ -87,40 +89,40 @@ export default function ToolsPage() {
       ) : (
         <DataTable
           columns={[
-            { key: "name", header: "名称", cell: (t) => <span className="font-medium whitespace-nowrap">{t.name}</span>, className: "min-w-[120px]" },
-            { key: "url", header: "链接", cell: (t) => t.url ? <a href={t.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate max-w-[180px] block text-xs" onClick={(e) => e.stopPropagation()}>{t.url}</a> : <span className="text-muted-foreground text-xs">-</span>, className: "max-w-[180px]" },
-            { key: "category", header: "分类", cell: (t) => <Badge variant="secondary" className={`text-xs ${categoryColors[t.category] || categoryColors.other}`}>{t.category}</Badge>, className: "whitespace-nowrap" },
-            { key: "corePower", header: "核心能力", cell: (t) => <span className="text-xs text-muted-foreground line-clamp-2 max-w-[180px]">{t.corePower || "-"}</span>, className: "max-w-[180px]" },
-            { key: "rating", header: "评分", cell: (t) => <span className="text-xs text-muted-foreground whitespace-nowrap">{t.rating || "-"}</span>, className: "whitespace-nowrap" },
-            { key: "record", header: "使用记录", cell: (t) => <span className="text-xs text-muted-foreground line-clamp-2 max-w-[180px]">{t.record || "-"}</span>, className: "max-w-[180px]" },
-            { key: "createdAt", header: "时间", cell: (t) => <span className="text-xs text-muted-foreground whitespace-nowrap">{new Date(t.createdAt).toLocaleDateString("zh-CN")}</span>, className: "whitespace-nowrap" },
+            { key: "name", header: "名称", cell: (t: Tool) => <span className="font-medium whitespace-nowrap">{toStr(t.name)}</span>, className: "min-w-[120px]" },
+            { key: "url", header: "链接", cell: (t: Tool) => { const u = toStr(t.url); return u ? <a href={u} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate max-w-[180px] block text-xs" onClick={(e) => e.stopPropagation()}>{u}</a> : <span className="text-muted-foreground text-xs">-</span>; }, className: "max-w-[180px]" },
+            { key: "category", header: "分类", cell: (t: Tool) => { const c = toStr(t.category) || "other"; return <Badge variant="secondary" className={`text-xs ${categoryColors[c] || categoryColors.other}`}>{c}</Badge>; }, className: "whitespace-nowrap" },
+            { key: "corePower", header: "核心能力", cell: (t: Tool) => <span className="text-xs text-muted-foreground line-clamp-2 max-w-[180px]">{toStr(t.corePower) || "-"}</span>, className: "max-w-[180px]" },
+            { key: "rating", header: "评分", cell: (t: Tool) => <span className="text-xs text-muted-foreground whitespace-nowrap">{toStr(t.rating) || "-"}</span>, className: "whitespace-nowrap" },
+            { key: "record", header: "使用记录", cell: (t: Tool) => <span className="text-xs text-muted-foreground line-clamp-2 max-w-[180px]">{toStr(t.record) || "-"}</span>, className: "max-w-[180px]" },
+            { key: "createdAt", header: "时间", cell: (t: Tool) => <span className="text-xs text-muted-foreground whitespace-nowrap">{new Date(t.createdAt).toLocaleDateString("zh-CN")}</span>, className: "whitespace-nowrap" },
           ]}
           data={tools} onRowClick={(t) => setSelectedId(t.id)} onDelete={(id) => deleteMutation.mutate(id)} emptyMessage="暂无工具"
         />
       )}
 
-      <DetailSheet open={!!selected} onOpenChange={() => setSelectedId(null)} title={selected?.name || "详情"}
+      <DetailSheet open={!!selected} onOpenChange={() => setSelectedId(null)} title={toStr(selected?.name) || "详情"}
         editFields={selected ? [
-          { key: "name", label: "名称", value: selected.name || "" },
-          { key: "url", label: "链接", value: selected.url || "" },
-          { key: "category", label: "分类", value: selected.category || "" },
-          { key: "corePower", label: "核心能力", value: selected.corePower || "", type: "textarea" },
-          { key: "initScript", label: "初始化脚本", value: selected.initScript || "", type: "textarea" },
-          { key: "rating", label: "评分", value: selected.rating || "" },
-          { key: "record", label: "使用记录", value: selected.record || "", type: "textarea" },
+          { key: "name", label: "名称", value: toStr(selected.name) },
+          { key: "url", label: "链接", value: toStr(selected.url) },
+          { key: "category", label: "分类", value: toStr(selected.category) },
+          { key: "corePower", label: "核心能力", value: toStr(selected.corePower), type: "textarea" as const },
+          { key: "initScript", label: "初始化脚本", value: toStr(selected.initScript), type: "textarea" as const },
+          { key: "rating", label: "评分", value: toStr(selected.rating) },
+          { key: "record", label: "使用记录", value: toStr(selected.record), type: "textarea" as const },
         ] : undefined}
         onSave={(data) => { if (selected) updateMutation.mutate({ id: selected.id, ...data }); }}
         onDelete={() => { if (selected) deleteMutation.mutate(selected.id); }}
       >
         {selected && (
           <div className="space-y-3 text-sm">
-            <FieldRow label="名称" value={selected.name} />
-            <FieldRow label="链接" value={selected.url} link />
-            <FieldRow label="分类" value={selected.category} badge />
-            <FieldRow label="核心能力" value={selected.corePower} block />
-            <FieldRow label="初始化脚本" value={selected.initScript} block />
-            <FieldRow label="评分" value={selected.rating} />
-            <FieldRow label="使用记录" value={selected.record} block />
+            <FieldRow label="名称" value={toStr(selected.name)} />
+            <FieldRow label="链接" value={toStr(selected.url)} link />
+            <FieldRow label="分类" value={toStr(selected.category)} badge />
+            <FieldRow label="核心能力" value={toStr(selected.corePower)} block />
+            <FieldRow label="初始化脚本" value={toStr(selected.initScript)} block />
+            <FieldRow label="评分" value={toStr(selected.rating)} />
+            <FieldRow label="使用记录" value={toStr(selected.record)} block />
             <FieldRow label="创建时间" value={selected.createdAt} date />
           </div>
         )}

@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { apiFetch } from "@/config/api";
+import { toStr } from "@/lib/utils";
 import type { Resource } from "@/types/api";
 
 export default function ResourcesPage() {
@@ -75,37 +76,37 @@ export default function ResourcesPage() {
       ) : (
         <DataTable
           columns={[
-            { key: "name", header: "名称", cell: (r) => <span className="font-medium whitespace-nowrap">{r.name}</span>, className: "min-w-[120px]" },
-            { key: "url", header: "链接", cell: (r) => r.url ? <a href={r.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate max-w-[180px] block text-xs" onClick={(e) => e.stopPropagation()}>{r.url}</a> : <span className="text-muted-foreground text-xs">-</span>, className: "max-w-[180px]" },
-            { key: "type", header: "类型", cell: (r) => r.type ? <Badge variant="secondary" className="text-xs">{r.type}</Badge> : <span className="text-muted-foreground text-xs">-</span>, className: "whitespace-nowrap" },
-            { key: "stock", header: "存量", cell: (r) => <span className="text-xs text-muted-foreground whitespace-nowrap">{r.stock || "-"}</span>, className: "whitespace-nowrap" },
-            { key: "status", header: "状态", cell: (r) => <span className="text-xs text-muted-foreground whitespace-nowrap">{r.status || "-"}</span>, className: "whitespace-nowrap" },
-            { key: "detail", header: "详情", cell: (r) => <span className="text-xs text-muted-foreground line-clamp-2 max-w-[200px]">{r.detail || "-"}</span>, className: "max-w-[200px]" },
+            { key: "name", header: "名称", cell: (r) => <span className="font-medium whitespace-nowrap">{toStr(r.name)}</span>, className: "min-w-[120px]" },
+            { key: "url", header: "链接", cell: (r) => { const u = toStr(r.url); return u ? <a href={u} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate max-w-[180px] block text-xs" onClick={(e) => e.stopPropagation()}>{u}</a> : <span className="text-muted-foreground text-xs">-</span>; }, className: "max-w-[180px]" },
+            { key: "type", header: "类型", cell: (r) => { const t = toStr(r.type); return t ? <Badge variant="secondary" className="text-xs">{t}</Badge> : <span className="text-muted-foreground text-xs">-</span>; }, className: "whitespace-nowrap" },
+            { key: "stock", header: "存量", cell: (r) => <span className="text-xs text-muted-foreground whitespace-nowrap">{toStr(r.stock) || "-"}</span>, className: "whitespace-nowrap" },
+            { key: "status", header: "状态", cell: (r) => <span className="text-xs text-muted-foreground whitespace-nowrap">{toStr(r.status) || "-"}</span>, className: "whitespace-nowrap" },
+            { key: "detail", header: "详情", cell: (r) => <span className="text-xs text-muted-foreground line-clamp-2 max-w-[200px]">{toStr(r.detail) || "-"}</span>, className: "max-w-[200px]" },
           ]}
           data={resources} onRowClick={(r) => setSelectedId(r.id)} onDelete={(id) => deleteMutation.mutate(id)} emptyMessage="暂无资源"
         />
       )}
 
-      <DetailSheet open={!!selected} onOpenChange={() => setSelectedId(null)} title={selected?.name || "详情"}
+      <DetailSheet open={!!selected} onOpenChange={() => setSelectedId(null)} title={toStr(selected?.name) || "详情"}
         editFields={selected ? [
-          { key: "name", label: "名称", value: selected.name || "" },
-          { key: "url", label: "链接", value: selected.url || "" },
-          { key: "type", label: "类型", value: selected.type || "" },
-          { key: "stock", label: "存量", value: selected.stock || "" },
-          { key: "status", label: "状态", value: selected.status || "" },
-          { key: "detail", label: "详情", value: selected.detail || "", type: "textarea" },
+          { key: "name", label: "名称", value: toStr(selected.name) },
+          { key: "url", label: "链接", value: toStr(selected.url) },
+          { key: "type", label: "类型", value: toStr(selected.type) },
+          { key: "stock", label: "存量", value: toStr(selected.stock) },
+          { key: "status", label: "状态", value: toStr(selected.status) },
+          { key: "detail", label: "详情", value: toStr(selected.detail), type: "textarea" },
         ] : undefined}
         onSave={(data) => { if (selected) updateMutation.mutate({ id: selected.id, ...data }); }}
         onDelete={() => { if (selected) deleteMutation.mutate(selected.id); }}
       >
         {selected && (
           <div className="space-y-3 text-sm">
-            <div><p className="text-xs text-muted-foreground mb-0.5">名称</p><p className="text-sm font-medium">{selected.name}</p></div>
-            {selected.url && <div><p className="text-xs text-muted-foreground mb-0.5">链接</p><a href={selected.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all text-xs">{selected.url}</a></div>}
-            {selected.type && <div><p className="text-xs text-muted-foreground mb-0.5">类型</p><Badge variant="secondary" className="text-xs">{selected.type}</Badge></div>}
-            {selected.stock && <div><p className="text-xs text-muted-foreground mb-0.5">存量</p><p className="text-xs">{selected.stock}</p></div>}
-            {selected.status && <div><p className="text-xs text-muted-foreground mb-0.5">状态</p><p className="text-xs">{selected.status}</p></div>}
-            {selected.detail && <div><p className="text-xs text-muted-foreground mb-0.5">详情</p><p className="text-xs whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto">{selected.detail}</p></div>}
+            <div><p className="text-xs text-muted-foreground mb-0.5">名称</p><p className="text-sm font-medium">{toStr(selected.name)}</p></div>
+            {toStr(selected.url) && <div><p className="text-xs text-muted-foreground mb-0.5">链接</p><a href={toStr(selected.url)} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all text-xs">{toStr(selected.url)}</a></div>}
+            {toStr(selected.type) && <div><p className="text-xs text-muted-foreground mb-0.5">类型</p><Badge variant="secondary" className="text-xs">{toStr(selected.type)}</Badge></div>}
+            {toStr(selected.stock) && <div><p className="text-xs text-muted-foreground mb-0.5">存量</p><p className="text-xs">{toStr(selected.stock)}</p></div>}
+            {toStr(selected.status) && <div><p className="text-xs text-muted-foreground mb-0.5">状态</p><p className="text-xs">{toStr(selected.status)}</p></div>}
+            {toStr(selected.detail) && <div><p className="text-xs text-muted-foreground mb-0.5">详情</p><p className="text-xs whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto">{toStr(selected.detail)}</p></div>}
             <div><p className="text-xs text-muted-foreground mb-0.5">创建时间</p><p className="text-xs">{new Date(selected.createdAt).toLocaleString("zh-CN")}</p></div>
           </div>
         )}

@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { apiFetch } from "@/config/api";
+import { toStr } from "@/lib/utils";
 import type { Method } from "@/types/api";
 
 export default function MethodsPage() {
@@ -79,10 +80,10 @@ export default function MethodsPage() {
       ) : (
         <DataTable
           columns={[
-            { key: "title", header: "标题", cell: (m) => <span className="font-medium whitespace-nowrap">{m.title}</span>, className: "min-w-[140px]" },
-            { key: "type", header: "类型", cell: (m) => m.type ? <Badge variant="secondary" className="text-xs">{m.type}</Badge> : <span className="text-muted-foreground text-xs">-</span>, className: "whitespace-nowrap" },
-            { key: "status", header: "状态", cell: (m) => <span className="text-xs text-muted-foreground whitespace-nowrap">{m.status || "-"}</span>, className: "whitespace-nowrap" },
-            { key: "essence", header: "精髓", cell: (m) => <span className="text-xs text-muted-foreground line-clamp-2 max-w-[220px]">{m.essence || "-"}</span>, className: "max-w-[220px]" },
+            { key: "title", header: "标题", cell: (m) => <span className="font-medium whitespace-nowrap">{toStr(m.title)}</span>, className: "min-w-[140px]" },
+            { key: "type", header: "类型", cell: (m) => { const t = toStr(m.type); return t ? <Badge variant="secondary" className="text-xs">{t}</Badge> : <span className="text-muted-foreground text-xs">-</span>; }, className: "whitespace-nowrap" },
+            { key: "status", header: "状态", cell: (m) => <span className="text-xs text-muted-foreground whitespace-nowrap">{toStr(m.status) || "-"}</span>, className: "whitespace-nowrap" },
+            { key: "essence", header: "精髓", cell: (m) => <span className="text-xs text-muted-foreground line-clamp-2 max-w-[220px]">{toStr(m.essence) || "-"}</span>, className: "max-w-[220px]" },
             { key: "tags", header: "标签", cell: (m) => { try { return (JSON.parse(m.tags || "[]") as string[]).map((t: string) => <span key={t} className="text-xs bg-muted px-1.5 py-0.5 rounded mr-1 whitespace-nowrap">{t}</span>); } catch { return <span className="text-muted-foreground text-xs">-</span>; } }, className: "max-w-[200px]" },
             { key: "createdAt", header: "时间", cell: (m) => <span className="text-xs text-muted-foreground whitespace-nowrap">{new Date(m.createdAt).toLocaleDateString("zh-CN")}</span>, className: "whitespace-nowrap" },
           ]}
@@ -90,30 +91,30 @@ export default function MethodsPage() {
         />
       )}
 
-      <DetailSheet open={!!selected} onOpenChange={() => setSelectedId(null)} title={selected?.title || "详情"}
+      <DetailSheet open={!!selected} onOpenChange={() => setSelectedId(null)} title={toStr(selected?.title) || "详情"}
         editFields={selected ? [
-          { key: "title", label: "标题", value: selected.title || "" },
-          { key: "essence", label: "精髓", value: selected.essence || "", type: "textarea" },
-          { key: "type", label: "类型", value: selected.type || "" },
-          { key: "status", label: "状态", value: selected.status || "" },
-          { key: "tags", label: "标签", value: selected.tags || "" },
-          { key: "related", label: "相关方法", value: selected.related || "" },
-          { key: "storage", label: "存储位置", value: selected.storage || "" },
-          { key: "learnedDate", label: "学习日期", value: selected.learnedDate || "" },
+          { key: "title", label: "标题", value: toStr(selected.title) },
+          { key: "essence", label: "精髓", value: toStr(selected.essence), type: "textarea" },
+          { key: "type", label: "类型", value: toStr(selected.type) },
+          { key: "status", label: "状态", value: toStr(selected.status) },
+          { key: "tags", label: "标签", value: toStr(selected.tags) },
+          { key: "related", label: "相关方法", value: toStr(selected.related) },
+          { key: "storage", label: "存储位置", value: toStr(selected.storage) },
+          { key: "learnedDate", label: "学习日期", value: toStr(selected.learnedDate) },
         ] : undefined}
         onSave={(data) => { if (selected) updateMutation.mutate({ id: selected.id, ...data }); }}
         onDelete={() => { if (selected) deleteMutation.mutate(selected.id); }}
       >
         {selected && (
           <div className="space-y-3 text-sm">
-            <div><p className="text-xs text-muted-foreground mb-0.5">标题</p><p className="text-sm font-medium">{selected.title}</p></div>
-            {selected.type && <div><p className="text-xs text-muted-foreground mb-0.5">类型</p><Badge variant="secondary" className="text-xs">{selected.type}</Badge></div>}
-            {selected.status && <div><p className="text-xs text-muted-foreground mb-0.5">状态</p><p className="text-xs">{selected.status}</p></div>}
-            {selected.essence && <div><p className="text-xs text-muted-foreground mb-0.5">精髓</p><p className="text-xs whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto">{selected.essence}</p></div>}
-            {selected.tags && <div><p className="text-xs text-muted-foreground mb-0.5">标签</p><p className="text-xs">{selected.tags}</p></div>}
-            {selected.related && <div><p className="text-xs text-muted-foreground mb-0.5">相关方法</p><p className="text-xs">{selected.related}</p></div>}
-            {selected.storage && <div><p className="text-xs text-muted-foreground mb-0.5">存储位置</p><p className="text-xs">{selected.storage}</p></div>}
-            {selected.learnedDate && <div><p className="text-xs text-muted-foreground mb-0.5">学习日期</p><p className="text-xs">{selected.learnedDate}</p></div>}
+            <div><p className="text-xs text-muted-foreground mb-0.5">标题</p><p className="text-sm font-medium">{toStr(selected.title)}</p></div>
+            {toStr(selected.type) && <div><p className="text-xs text-muted-foreground mb-0.5">类型</p><Badge variant="secondary" className="text-xs">{toStr(selected.type)}</Badge></div>}
+            {toStr(selected.status) && <div><p className="text-xs text-muted-foreground mb-0.5">状态</p><p className="text-xs">{toStr(selected.status)}</p></div>}
+            {toStr(selected.essence) && <div><p className="text-xs text-muted-foreground mb-0.5">精髓</p><p className="text-xs whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto">{toStr(selected.essence)}</p></div>}
+            {toStr(selected.tags) && <div><p className="text-xs text-muted-foreground mb-0.5">标签</p><p className="text-xs">{toStr(selected.tags)}</p></div>}
+            {toStr(selected.related) && <div><p className="text-xs text-muted-foreground mb-0.5">相关方法</p><p className="text-xs">{toStr(selected.related)}</p></div>}
+            {toStr(selected.storage) && <div><p className="text-xs text-muted-foreground mb-0.5">存储位置</p><p className="text-xs">{toStr(selected.storage)}</p></div>}
+            {toStr(selected.learnedDate) && <div><p className="text-xs text-muted-foreground mb-0.5">学习日期</p><p className="text-xs">{toStr(selected.learnedDate)}</p></div>}
             <div><p className="text-xs text-muted-foreground mb-0.5">创建时间</p><p className="text-xs">{new Date(selected.createdAt).toLocaleString("zh-CN")}</p></div>
           </div>
         )}

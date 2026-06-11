@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
 import { apiFetch } from "@/config/api";
+import { toStr } from "@/lib/utils";
 import type { CalendarEvent } from "@/types/api";
 
 export default function CalendarPage() {
@@ -89,9 +90,9 @@ export default function CalendarPage() {
             <h3 className="text-sm font-semibold mb-2">全部日程</h3>
             <DataTable
               columns={[
-                { key: "title", header: "标题", cell: (e) => <span className="font-medium text-xs whitespace-nowrap">{e.title}</span>, className: "min-w-[100px]" },
-                { key: "status", header: "状态", cell: (e) => <span className="text-xs text-muted-foreground whitespace-nowrap">{e.status || "-"}</span>, className: "whitespace-nowrap" },
-                { key: "priority", header: "优先级", cell: (e) => <span className="text-xs text-muted-foreground whitespace-nowrap">{e.priority || "-"}</span>, className: "whitespace-nowrap" },
+                { key: "title", header: "标题", cell: (e) => <span className="font-medium text-xs whitespace-nowrap">{toStr(e.title)}</span>, className: "min-w-[100px]" },
+                { key: "status", header: "状态", cell: (e) => <span className="text-xs text-muted-foreground whitespace-nowrap">{toStr(e.status) || "-"}</span>, className: "whitespace-nowrap" },
+                { key: "priority", header: "优先级", cell: (e) => <span className="text-xs text-muted-foreground whitespace-nowrap">{toStr(e.priority) || "-"}</span>, className: "whitespace-nowrap" },
                 { key: "startTime", header: "开始", cell: (e) => <span className="text-xs text-muted-foreground whitespace-nowrap">{e.startTime ? new Date(e.startTime).toLocaleString("zh-CN") : "-"}</span>, className: "whitespace-nowrap" },
                 { key: "endTime", header: "结束", cell: (e) => <span className="text-xs text-muted-foreground whitespace-nowrap">{e.endTime ? new Date(e.endTime).toLocaleString("zh-CN") : "-"}</span>, className: "whitespace-nowrap" },
               ]}
@@ -112,16 +113,16 @@ export default function CalendarPage() {
                 <div key={e.id} className="p-3 rounded-lg border cursor-pointer hover:bg-muted/30 transition-colors" onClick={() => setSelectedId(e.id)}>
                   <div className="flex items-start justify-between">
                     <div>
-                      <h4 className="text-sm font-medium">{e.title}</h4>
-                      {e.content && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{e.content}</p>}
-                      {e.description && <p className="text-xs text-muted-foreground mt-1">{e.description}</p>}
+                      <h4 className="text-sm font-medium">{toStr(e.title)}</h4>
+                      {toStr(e.content) && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{toStr(e.content)}</p>}
+                      {toStr(e.description) && <p className="text-xs text-muted-foreground mt-1">{toStr(e.description)}</p>}
                       <div className="flex items-center gap-2 mt-1">
                         <p className="text-xs text-muted-foreground">
                           {new Date(e.startTime).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}
                           {e.endTime && ` - ${new Date(e.endTime).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}`}
                         </p>
                         {e.allDay === "true" && <Badge variant="secondary" className="text-[10px]">全天</Badge>}
-                        {e.priority && <Badge variant="secondary" className="text-[10px]">{e.priority}</Badge>}
+                        {toStr(e.priority) && <Badge variant="secondary" className="text-[10px]">{toStr(e.priority)}</Badge>}
                       </div>
                     </div>
                     <Button variant="ghost" size="sm" className="text-xs text-red-500" onClick={(ev) => { ev.stopPropagation(); deleteMutation.mutate(e.id); }}>删除</Button>
@@ -133,33 +134,33 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      <DetailSheet open={!!selected} onOpenChange={() => setSelectedId(null)} title={selected?.title || "详情"}
+      <DetailSheet open={!!selected} onOpenChange={() => setSelectedId(null)} title={toStr(selected?.title) || "详情"}
         editFields={selected ? [
-          { key: "title", label: "标题", value: selected.title || "" },
-          { key: "content", label: "内容", value: selected.content || "", type: "textarea" },
-          { key: "description", label: "描述", value: selected.description || "", type: "textarea" },
+          { key: "title", label: "标题", value: toStr(selected.title) },
+          { key: "content", label: "内容", value: toStr(selected.content), type: "textarea" },
+          { key: "description", label: "描述", value: toStr(selected.description), type: "textarea" },
           { key: "startTime", label: "开始时间", value: selected.startTime || "" },
           { key: "endTime", label: "结束时间", value: selected.endTime || "" },
-          { key: "priority", label: "优先级", value: selected.priority || "" },
-          { key: "status", label: "状态", value: selected.status || "" },
-          { key: "projectId", label: "项目 ID", value: selected.projectId || "" },
+          { key: "priority", label: "优先级", value: toStr(selected.priority) },
+          { key: "status", label: "状态", value: toStr(selected.status) },
+          { key: "projectId", label: "项目 ID", value: toStr(selected.projectId) },
         ] : undefined}
         onSave={(data) => { if (selected) updateMutation.mutate({ id: selected.id, ...data }); }}
         onDelete={() => { if (selected) deleteMutation.mutate(selected.id); }}
       >
         {selected && (
           <div className="space-y-3 text-sm">
-            <div><p className="text-xs text-muted-foreground mb-0.5">标题</p><p className="text-sm font-medium">{selected.title}</p></div>
-            {selected.content && <div><p className="text-xs text-muted-foreground mb-0.5">内容</p><p className="text-xs whitespace-pre-wrap leading-relaxed">{selected.content}</p></div>}
-            {selected.description && <div><p className="text-xs text-muted-foreground mb-0.5">描述</p><p className="text-xs">{selected.description}</p></div>}
+            <div><p className="text-xs text-muted-foreground mb-0.5">标题</p><p className="text-sm font-medium">{toStr(selected.title)}</p></div>
+            {toStr(selected.content) && <div><p className="text-xs text-muted-foreground mb-0.5">内容</p><p className="text-xs whitespace-pre-wrap leading-relaxed">{toStr(selected.content)}</p></div>}
+            {toStr(selected.description) && <div><p className="text-xs text-muted-foreground mb-0.5">描述</p><p className="text-xs">{toStr(selected.description)}</p></div>}
             <div className="grid grid-cols-2 gap-2">
               {selected.startTime && <div><p className="text-xs text-muted-foreground mb-0.5">开始</p><p className="text-xs">{new Date(selected.startTime).toLocaleString("zh-CN")}</p></div>}
               {selected.endTime && <div><p className="text-xs text-muted-foreground mb-0.5">结束</p><p className="text-xs">{new Date(selected.endTime).toLocaleString("zh-CN")}</p></div>}
             </div>
             {selected.allDay === "true" && <div><Badge variant="secondary" className="text-xs">全天</Badge></div>}
-            {selected.priority && <div><p className="text-xs text-muted-foreground mb-0.5">优先级</p><p className="text-xs">{selected.priority}</p></div>}
-            {selected.status && <div><p className="text-xs text-muted-foreground mb-0.5">状态</p><p className="text-xs">{selected.status}</p></div>}
-            {selected.projectId && <div><p className="text-xs text-muted-foreground mb-0.5">项目</p><p className="text-xs">{selected.projectId}</p></div>}
+            {toStr(selected.priority) && <div><p className="text-xs text-muted-foreground mb-0.5">优先级</p><p className="text-xs">{toStr(selected.priority)}</p></div>}
+            {toStr(selected.status) && <div><p className="text-xs text-muted-foreground mb-0.5">状态</p><p className="text-xs">{toStr(selected.status)}</p></div>}
+            {toStr(selected.projectId) && <div><p className="text-xs text-muted-foreground mb-0.5">项目</p><p className="text-xs">{toStr(selected.projectId)}</p></div>}
             <div><p className="text-xs text-muted-foreground mb-0.5">创建时间</p><p className="text-xs">{new Date(selected.createdAt).toLocaleString("zh-CN")}</p></div>
           </div>
         )}
