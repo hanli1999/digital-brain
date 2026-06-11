@@ -18,6 +18,7 @@ export const AI_TARGET_MAP: Record<string, string> = {
   "功法库": "methods",
   "方法流程库": "methods",
   "文献库": "library",
+  "丹房": "library",            // 丹房 = 文献库/资料库
   "资源管理": "resources",
   "AI引擎库": "ai-engine",
   "AI Agent库": "ai-engine",

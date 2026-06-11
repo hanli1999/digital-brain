@@ -16,7 +16,10 @@ app.post("/", async (c) => {
   const body = await c.req.json();
   const input: Record<string, unknown> = {};
   if (body.name) input.name = body.name;
-  if (body.url) input.url = body.url;
+  // Feishu URL 字段需要 {link, text} 格式
+  if (body.url) {
+    input.url = typeof body.url === "string" ? { link: body.url, text: body.url } : body.url;
+  }
   if (body.type) input.type = body.type;
   if (body.stock !== undefined) input.stock = body.stock;
   if (body.status) input.status = body.status;
@@ -38,7 +41,10 @@ app.put("/:id", async (c) => {
   const body = await c.req.json();
   const input: Record<string, unknown> = {};
   if (body.name !== undefined) input.name = body.name;
-  if (body.url !== undefined) input.url = body.url;
+  // Feishu URL 字段需要 {link, text} 格式
+  if (body.url !== undefined) {
+    input.url = typeof body.url === "string" ? { link: body.url, text: body.url } : body.url;
+  }
   if (body.type !== undefined) input.type = body.type;
   if (body.stock !== undefined) input.stock = body.stock;
   if (body.status !== undefined) input.status = body.status;
