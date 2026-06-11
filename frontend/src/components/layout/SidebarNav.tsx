@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { apiFetch } from "@/config/api";
 
 const coreItems = [
   { href: "/inbox", label: "收件箱", icon: "📥" },
@@ -26,6 +28,15 @@ export function SidebarNav() {
   const pathname = useLocation().pathname;
   const [showMore, setShowMore] = useState(false);
   const isInMore = moreItems.some((i) => i.href === pathname);
+
+  const { data: pendingCount } = useQuery({
+    queryKey: ["inbox-pending-count"],
+    queryFn: async () => {
+      const inbox = await apiFetch("/inbox").then((r) => r.json()) as { status: string }[];
+      return inbox.filter((i) => i.status === "pending").length;
+    },
+    refetchInterval: 60000,
+  });
 
   const linkClass = (href: string, isMoreItem = false) =>
     cn(
@@ -55,6 +66,9 @@ export function SidebarNav() {
           <Link key={item.href} to={item.href} className={linkClass(item.href)}>
             <span className="text-base w-5 text-center">{item.icon}</span>
             <span>{item.label}</span>
+            {item.href === "/inbox" && pendingCount !== undefined && pendingCount > 0 && (
+              <span className="ml-auto text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-full font-medium tabular-nums">{pendingCount}</span>
+            )}
           </Link>
         ))}
 
@@ -102,11 +116,15 @@ export function SidebarNav() {
         </Link>
         <div className="mt-2 pt-2 border-t border-sidebar-border/50">
           <div className="flex items-center gap-2 px-3 py-1.5">
-            <span className="text-sm">🧝</span>
+            <span className="relative flex h-5 w-5 items-center justify-center">
+              <span className="text-sm">🧝</span>
+              <span className="absolute inset-0 rounded-full animate-[yinyue-pulse_3s_ease-in-out_infinite] bg-primary/20" />
+            </span>
             <div className="flex flex-col">
               <span className="text-[11px] text-sidebar-foreground/70 font-medium">银月</span>
               <span className="text-[9px] text-sidebar-foreground/40">洞府管家</span>
             </div>
+            <span className="ml-auto w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_4px_rgba(74,222,128,0.5)]" />
           </div>
         </div>
       </div>

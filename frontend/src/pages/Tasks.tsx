@@ -19,6 +19,15 @@ const statusColors: Record<string, string> = {
   in_progress: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
   done: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
 };
+// 飞书返回中文状态值 → 前端英文key归一化
+function normalizeStatus(s: string | undefined): string {
+  if (!s) return "todo";
+  const t = s.trim();
+  if (t === "待办" || t === "todo" || t === "TODO") return "todo";
+  if (t === "进行中" || t === "in_progress" || t === "IN_PROGRESS" || t === "进行中") return "in_progress";
+  if (t === "已完成" || t === "done" || t === "DONE" || t === "完成") return "done";
+  return t; // unknown status, pass through
+}
 const columns = [
   { key: "todo", label: "待办", color: "bg-neutral-50 dark:bg-neutral-900/50" },
   { key: "in_progress", label: "进行中", color: "bg-blue-50 dark:bg-blue-950/50" },
@@ -87,9 +96,9 @@ export default function TasksPage() {
         <div className="grid grid-cols-3 gap-4">
           {columns.map((col) => (
             <div key={col.key} className={`rounded-lg p-4 ${col.color}`}>
-              <h3 className="text-sm font-semibold mb-3">{col.label} ({tasks.filter((t) => t.status === col.key).length})</h3>
+              <h3 className="text-sm font-semibold mb-3">{col.label} ({tasks.filter((t) => normalizeStatus(t.status) === col.key).length})</h3>
               <div className="space-y-2">
-                {tasks.filter((t) => t.status === col.key).map((task) => (
+                {tasks.filter((t) => normalizeStatus(t.status) === col.key).map((task) => (
                   <Card key={task.id} className="cursor-pointer hover:shadow-sm" onClick={() => setSelectedId(task.id)}>
                     <CardHeader className="p-3 pb-0">
                       <div className="flex items-start justify-between">
@@ -102,7 +111,7 @@ export default function TasksPage() {
                       {task.action && <p className="text-xs text-primary/70 mt-1">{task.action}</p>}
                       {task.tags && <div className="flex gap-1 mt-1">{(() => { try { return (JSON.parse(task.tags) as string[]).map((t: string) => <span key={t} className="text-[10px] bg-muted px-1 py-0.5 rounded">{t}</span>); } catch { return null; } })()}</div>}
                       <div className="flex items-center gap-2 mt-2">
-                        <Badge variant="secondary" className={`text-xs ${statusColors[task.status] || ""}`}>{statusLabels[task.status] || task.status}</Badge>
+                        <Badge variant="secondary" className={`text-xs ${statusColors[normalizeStatus(task.status)] || ""}`}>{statusLabels[normalizeStatus(task.status)] || task.status}</Badge>
                         {col.key !== "done" && (
                           <Button variant="ghost" size="sm" className="text-xs ml-auto"
                             onClick={(e) => { e.stopPropagation(); moveMutation.mutate({ id: task.id, status: col.key === "todo" ? "in_progress" : "done" }); }}>
@@ -133,7 +142,7 @@ export default function TasksPage() {
         {selected && (
           <div className="space-y-3 text-sm">
             <div><p className="text-xs text-muted-foreground mb-0.5">标题</p><p className="text-sm font-medium">{selected.title}</p></div>
-            <div><p className="text-xs text-muted-foreground mb-0.5">状态</p><Badge variant="secondary" className={`text-xs ${statusColors[selected.status] || ""}`}>{statusLabels[selected.status] || selected.status}</Badge></div>
+            <div><p className="text-xs text-muted-foreground mb-0.5">状态</p><Badge variant="secondary" className={`text-xs ${statusColors[normalizeStatus(selected.status)] || ""}`}>{statusLabels[normalizeStatus(selected.status)] || selected.status}</Badge></div>
             {selected.description && <div><p className="text-xs text-muted-foreground mb-0.5">描述</p><p className="text-xs whitespace-pre-wrap leading-relaxed">{selected.description}</p></div>}
             {selected.action && <div><p className="text-xs text-muted-foreground mb-0.5">行动</p><p className="text-xs">{selected.action}</p></div>}
             {selected.tags && <div><p className="text-xs text-muted-foreground mb-0.5">标签</p><p className="text-xs">{selected.tags}</p></div>}
