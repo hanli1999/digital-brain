@@ -41,6 +41,11 @@ app.use("/uploads/*", serveStatic({ root: "./" }));
 // 公开路由（无需认证）
 app.route("/api/auth", authRoutes);
 
+app.get("/", (c) => c.json({
+  status: "online",
+  uptime: process.uptime(),
+  timestamp: new Date().toISOString(),
+}));
 app.get("/api/status", (c) => c.json({
   status: "online",
   uptime: process.uptime(),
