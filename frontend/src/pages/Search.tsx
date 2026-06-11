@@ -16,11 +16,24 @@ function SearchResults() {
 
   const entityLabels: Record<string, string> = {
     inbox: "收件箱",
-    task: "任务",
-    tool: "工具",
-    method: "方法",
-    document: "文献",
-    ai_mechanism: "AI机制",
+    tasks: "机缘录",
+    tools: "工具资源库",
+    methods: "方法流程库",
+    library: "文献库",
+    "ai-engine": "AI Agent库",
+    resources: "资源管理",
+    files: "文件管理",
+  };
+
+  const entityRoutes: Record<string, string> = {
+    inbox: "/inbox",
+    tasks: "/tasks",
+    tools: "/tools",
+    methods: "/methods",
+    library: "/library",
+    "ai-engine": "/ai-engine",
+    resources: "/resources",
+    files: "/files",
   };
 
   if (!q) {
@@ -41,7 +54,7 @@ function SearchResults() {
       {results.map((r) => (
         <Link
           key={`${r.entityType}-${r.entityId}`}
-          to={`/${r.entityType === "inbox" ? "inbox" : r.entityType === "document" ? "library" : r.entityType + "s"}`}
+          to={entityRoutes[r.entityType] || "/inbox"}
           className="block p-3 rounded-lg border hover:shadow-sm transition-shadow"
         >
           <div className="flex items-center gap-2 mb-1">

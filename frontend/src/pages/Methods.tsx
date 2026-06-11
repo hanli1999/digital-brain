@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { apiFetch } from "@/config/api";
-import { toStr } from "@/lib/utils";
+import { toStr, safeDate } from "@/lib/utils";
 import type { Method } from "@/types/api";
 
 export default function MethodsPage() {
@@ -85,7 +85,7 @@ export default function MethodsPage() {
             { key: "status", header: "状态", cell: (m) => <span className="text-xs text-muted-foreground whitespace-nowrap">{toStr(m.status) || "-"}</span>, className: "whitespace-nowrap" },
             { key: "essence", header: "精髓", cell: (m) => <span className="text-xs text-muted-foreground line-clamp-2 max-w-[220px]">{toStr(m.essence) || "-"}</span>, className: "max-w-[220px]" },
             { key: "tags", header: "标签", cell: (m) => { try { return (JSON.parse(m.tags || "[]") as string[]).map((t: string) => <span key={t} className="text-xs bg-muted px-1.5 py-0.5 rounded mr-1 whitespace-nowrap">{t}</span>); } catch { return <span className="text-muted-foreground text-xs">-</span>; } }, className: "max-w-[200px]" },
-            { key: "createdAt", header: "时间", cell: (m) => <span className="text-xs text-muted-foreground whitespace-nowrap">{new Date(m.createdAt).toLocaleDateString("zh-CN")}</span>, className: "whitespace-nowrap" },
+            { key: "createdAt", header: "时间", cell: (m) => <span className="text-xs text-muted-foreground whitespace-nowrap">{safeDate(m.createdAt)}</span>, className: "whitespace-nowrap" },
           ]}
           data={filtered} onRowClick={(m) => setSelectedId(m.id)} onDelete={(id) => deleteMutation.mutate(id)} emptyMessage="暂无方法"
         />
@@ -115,7 +115,7 @@ export default function MethodsPage() {
             {toStr(selected.related) && <div><p className="text-xs text-muted-foreground mb-0.5">相关方法</p><p className="text-xs">{toStr(selected.related)}</p></div>}
             {toStr(selected.storage) && <div><p className="text-xs text-muted-foreground mb-0.5">存储位置</p><p className="text-xs">{toStr(selected.storage)}</p></div>}
             {toStr(selected.learnedDate) && <div><p className="text-xs text-muted-foreground mb-0.5">学习日期</p><p className="text-xs">{toStr(selected.learnedDate)}</p></div>}
-            <div><p className="text-xs text-muted-foreground mb-0.5">创建时间</p><p className="text-xs">{new Date(selected.createdAt).toLocaleString("zh-CN")}</p></div>
+            <div><p className="text-xs text-muted-foreground mb-0.5">创建时间</p><p className="text-xs">{safeDate(selected.createdAt, "datetime")}</p></div>
           </div>
         )}
       </DetailSheet>

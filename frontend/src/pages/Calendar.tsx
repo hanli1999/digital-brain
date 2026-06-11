@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
 import { apiFetch } from "@/config/api";
-import { toStr } from "@/lib/utils";
+import { toStr, safeDate } from "@/lib/utils";
 import type { CalendarEvent } from "@/types/api";
 
 export default function CalendarPage() {
@@ -161,7 +161,7 @@ export default function CalendarPage() {
             {toStr(selected.priority) && <div><p className="text-xs text-muted-foreground mb-0.5">优先级</p><p className="text-xs">{toStr(selected.priority)}</p></div>}
             {toStr(selected.status) && <div><p className="text-xs text-muted-foreground mb-0.5">状态</p><p className="text-xs">{toStr(selected.status)}</p></div>}
             {toStr(selected.projectId) && <div><p className="text-xs text-muted-foreground mb-0.5">项目</p><p className="text-xs">{toStr(selected.projectId)}</p></div>}
-            <div><p className="text-xs text-muted-foreground mb-0.5">创建时间</p><p className="text-xs">{new Date(selected.createdAt).toLocaleString("zh-CN")}</p></div>
+            <div><p className="text-xs text-muted-foreground mb-0.5">创建时间</p><p className="text-xs">{safeDate(selected.createdAt, "datetime")}</p></div>
           </div>
         )}
       </DetailSheet>

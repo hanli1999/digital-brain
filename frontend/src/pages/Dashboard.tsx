@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiFetch } from "@/config/api";
+import { safeDate } from "@/lib/utils";
 import type { InboxItem, Task } from "@/types/api";
 
 function yinyueGreeting(): string {
@@ -206,7 +207,7 @@ export default function Dashboard() {
                   <span className="text-xs bg-muted px-1.5 py-0.5 rounded-full shrink-0">{item.module}</span>
                   <span className="text-muted-foreground truncate max-w-md" title={title}>{truncated}</span>
                   <span className="text-xs text-muted-foreground/50 shrink-0 ml-auto">
-                    {new Date(item.createdAt).toLocaleDateString("zh-CN")}
+                    {safeDate(item.createdAt)}
                   </span>
                 </div>
                 );

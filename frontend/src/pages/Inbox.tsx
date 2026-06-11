@@ -268,7 +268,7 @@ export default function InboxPage() {
             { key: "source", header: "来源", cell: (i: InboxItem) => <span className="text-xs text-muted-foreground whitespace-nowrap">{i.source === "manual" ? "手动" : i.source === "feishu-bot" ? "飞书机器人" : "飞书导入"}</span>, className: "whitespace-nowrap" },
             { key: "status", header: "状态", cell: (i: InboxItem) => <StatusBadge status={i.status} />, className: "whitespace-nowrap" },
             { key: "createdAt", header: "时间", cell: (i: InboxItem) => <span className="text-xs text-muted-foreground whitespace-nowrap">{safeDate(i.createdAt)}</span>, className: "whitespace-nowrap" },
-            { key: "actions", header: "操作", cell: (i: InboxItem) => i.status === "pending" ? <RouteButton inboxId={i.id} title={i.title} content={i.content} /> : <span className="text-xs text-muted-foreground">→ {i.routeTarget}</span>, className: "whitespace-nowrap" },
+            { key: "actions", header: "操作", cell: (i: InboxItem) => i.status === "pending" ? <RouteButton inboxId={i.id} title={i.title} content={i.content} aiTarget={i.routeTarget} /> : <span className="text-xs text-muted-foreground">→ {i.routeTarget}</span>, className: "whitespace-nowrap" },
           ]}
           data={filteredItems}
           onRowClick={(i) => setSelectedId(i.id)}

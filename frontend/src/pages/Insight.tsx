@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { apiFetch } from "@/config/api";
+import { safeDate } from "@/lib/utils";
 import type { Insight } from "@/types/api";
 
 export default function InsightPage() {
@@ -67,7 +68,7 @@ export default function InsightPage() {
             { key: "title", header: "标题", cell: (d: Insight) => <span className="font-medium">{d.title}</span> },
             { key: "category", header: "分类", cell: (d: Insight) => <span className="text-xs text-muted-foreground">{d.category || "-"}</span> },
             { key: "source", header: "来源", cell: (d: Insight) => <span className="text-xs text-muted-foreground">{d.source || "-"}</span> },
-            { key: "createdAt", header: "时间", cell: (d: Insight) => <span className="text-xs text-muted-foreground">{new Date(d.createdAt).toLocaleDateString("zh-CN")}</span> },
+            { key: "createdAt", header: "时间", cell: (d: Insight) => <span className="text-xs text-muted-foreground">{safeDate(d.createdAt)}</span> },
           ]}
           data={items} onRowClick={(d) => setSelectedId(d.id)} onDelete={(id) => deleteMutation.mutate(id)} emptyMessage="暂无洞察"
         />
@@ -81,7 +82,7 @@ export default function InsightPage() {
               {selected.source && <span className="text-xs text-muted-foreground">来源：{selected.source}</span>}
             </div>
             <p className="whitespace-pre-wrap text-muted-foreground leading-relaxed">{selected.content}</p>
-            <p className="text-xs text-muted-foreground">创建于 {new Date(selected.createdAt).toLocaleString("zh-CN")}</p>
+            <p className="text-xs text-muted-foreground">创建于 {safeDate(selected.createdAt, "datetime")}</p>
           </div>
         )}
       </DetailSheet>

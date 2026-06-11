@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { apiFetch } from "@/config/api";
-import { toStr } from "@/lib/utils";
+import { toStr, safeDate } from "@/lib/utils";
 import type { AiMechanism } from "@/types/api";
 
 export default function AiEnginePage() {
@@ -93,7 +93,7 @@ export default function AiEnginePage() {
             { key: "features", header: "功能特性", cell: (m) => <span className="text-xs text-muted-foreground line-clamp-2 max-w-[180px]">{toStr(m.features) || "-"}</span>, className: "max-w-[180px]" },
             { key: "scenarios", header: "适用场景", cell: (m) => <span className="text-xs text-muted-foreground line-clamp-1 max-w-[150px]">{toStr(m.scenarios) || "-"}</span>, className: "max-w-[150px]" },
             { key: "source", header: "来源", cell: (m) => <span className="text-xs text-muted-foreground max-w-[120px] truncate">{toStr(m.source) || "-"}</span>, className: "max-w-[120px]" },
-            { key: "createdAt", header: "时间", cell: (m) => <span className="text-xs text-muted-foreground whitespace-nowrap">{new Date(m.createdAt).toLocaleDateString("zh-CN")}</span>, className: "whitespace-nowrap" },
+            { key: "createdAt", header: "时间", cell: (m) => <span className="text-xs text-muted-foreground whitespace-nowrap">{safeDate(m.createdAt)}</span>, className: "whitespace-nowrap" },
           ]}
           data={items} onRowClick={(m) => setSelectedId(m.id)} onDelete={(id) => deleteMutation.mutate(id)} emptyMessage="暂无机制"
         />
@@ -125,7 +125,7 @@ export default function AiEnginePage() {
             {toStr(selected.scenarios) && <div><p className="text-xs text-muted-foreground mb-0.5">适用场景</p><p className="text-xs whitespace-pre-wrap leading-relaxed">{toStr(selected.scenarios)}</p></div>}
             {toStr(selected.scenariosDetail) && <div><p className="text-xs text-muted-foreground mb-0.5">场景详解</p><p className="text-xs whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto">{toStr(selected.scenariosDetail)}</p></div>}
             {toStr(selected.source) && <div><p className="text-xs text-muted-foreground mb-0.5">来源</p><p className="text-xs">{toStr(selected.source)}</p></div>}
-            <div><p className="text-xs text-muted-foreground mb-0.5">创建时间</p><p className="text-xs">{new Date(selected.createdAt).toLocaleString("zh-CN")}</p></div>
+            <div><p className="text-xs text-muted-foreground mb-0.5">创建时间</p><p className="text-xs">{safeDate(selected.createdAt, "datetime")}</p></div>
           </div>
         )}
       </DetailSheet>

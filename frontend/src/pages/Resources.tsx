@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { apiFetch } from "@/config/api";
-import { toStr } from "@/lib/utils";
+import { toStr, safeDate } from "@/lib/utils";
 import type { Resource } from "@/types/api";
 
 export default function ResourcesPage() {
@@ -107,7 +107,7 @@ export default function ResourcesPage() {
             {toStr(selected.stock) && <div><p className="text-xs text-muted-foreground mb-0.5">存量</p><p className="text-xs">{toStr(selected.stock)}</p></div>}
             {toStr(selected.status) && <div><p className="text-xs text-muted-foreground mb-0.5">状态</p><p className="text-xs">{toStr(selected.status)}</p></div>}
             {toStr(selected.detail) && <div><p className="text-xs text-muted-foreground mb-0.5">详情</p><p className="text-xs whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto">{toStr(selected.detail)}</p></div>}
-            <div><p className="text-xs text-muted-foreground mb-0.5">创建时间</p><p className="text-xs">{new Date(selected.createdAt).toLocaleString("zh-CN")}</p></div>
+            <div><p className="text-xs text-muted-foreground mb-0.5">创建时间</p><p className="text-xs">{safeDate(selected.createdAt, "datetime")}</p></div>
           </div>
         )}
       </DetailSheet>

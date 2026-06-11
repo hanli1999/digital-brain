@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { apiFetch } from "@/config/api";
-import { toStr } from "@/lib/utils";
+import { toStr, safeDate } from "@/lib/utils";
 import type { Document } from "@/types/api";
 
 const typeLabels: Record<string, string> = { paper: "论文", book: "书籍", article: "文章", doc: "文档", other: "其他" };
@@ -88,7 +88,7 @@ export default function LibraryPage() {
             { key: "importance", header: "重要度", cell: (d) => <span className="text-xs text-muted-foreground whitespace-nowrap">{toStr(d.importance) || "-"}</span>, className: "whitespace-nowrap" },
             { key: "status", header: "状态", cell: (d) => <span className="text-xs text-muted-foreground whitespace-nowrap">{toStr(d.status) || "-"}</span>, className: "whitespace-nowrap" },
             { key: "abstract", header: "摘要", cell: (d) => <span className="text-xs text-muted-foreground line-clamp-2 max-w-[250px]">{toStr(d.abstract) || "-"}</span>, className: "max-w-[250px]" },
-            { key: "createdAt", header: "时间", cell: (d) => <span className="text-xs text-muted-foreground whitespace-nowrap">{new Date(d.createdAt).toLocaleDateString("zh-CN")}</span>, className: "whitespace-nowrap" },
+            { key: "createdAt", header: "时间", cell: (d) => <span className="text-xs text-muted-foreground whitespace-nowrap">{safeDate(d.createdAt)}</span>, className: "whitespace-nowrap" },
           ]}
           data={docs} onRowClick={(d) => setSelectedId(d.id)} onDelete={(id) => deleteMutation.mutate(id)} emptyMessage="暂无文献"
         />
@@ -120,7 +120,7 @@ export default function LibraryPage() {
             {toStr(selected.abstract) && <div><p className="text-xs text-muted-foreground mb-0.5">摘要</p><p className="text-xs whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto">{toStr(selected.abstract)}</p></div>}
             {toStr(selected.snippet) && <div><p className="text-xs text-muted-foreground mb-0.5">片段</p><p className="text-xs whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto">{toStr(selected.snippet)}</p></div>}
             {selected.publishedAt && <div><p className="text-xs text-muted-foreground mb-0.5">发布日期</p><p className="text-xs">{toStr(selected.publishedAt)}</p></div>}
-            <div><p className="text-xs text-muted-foreground mb-0.5">添加时间</p><p className="text-xs">{new Date(selected.createdAt).toLocaleString("zh-CN")}</p></div>
+            <div><p className="text-xs text-muted-foreground mb-0.5">添加时间</p><p className="text-xs">{safeDate(selected.createdAt, "datetime")}</p></div>
           </div>
         )}
       </DetailSheet>

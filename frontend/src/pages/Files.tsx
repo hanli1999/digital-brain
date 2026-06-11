@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { apiFetch } from "@/config/api";
-import { toStr } from "@/lib/utils";
+import { toStr, safeDate } from "@/lib/utils";
 import type { FileAsset } from "@/types/api";
 
 function formatSize(bytes: number): string {
@@ -86,7 +86,7 @@ export default function FilesPage() {
             { key: "date", header: "日期", cell: (f) => <span className="text-xs text-muted-foreground whitespace-nowrap">{toStr(f.date) || "-"}</span>, className: "whitespace-nowrap" },
             { key: "mimeType", header: "类型", cell: (f) => <span className="text-xs text-muted-foreground whitespace-nowrap">{f.mimeType || "-"}</span>, className: "whitespace-nowrap" },
             { key: "size", header: "大小", cell: (f) => <span className="text-xs text-muted-foreground whitespace-nowrap">{formatSize(f.size || 0)}</span>, className: "whitespace-nowrap" },
-            { key: "createdAt", header: "上传时间", cell: (f) => <span className="text-xs text-muted-foreground whitespace-nowrap">{new Date(f.createdAt).toLocaleDateString("zh-CN")}</span>, className: "whitespace-nowrap" },
+            { key: "createdAt", header: "上传时间", cell: (f) => <span className="text-xs text-muted-foreground whitespace-nowrap">{safeDate(f.createdAt)}</span>, className: "whitespace-nowrap" },
           ]}
           data={files} onRowClick={(f) => setSelectedId(f.id)} onDelete={(id) => deleteMutation.mutate(id)} emptyMessage="暂无文件"
         />
@@ -104,7 +104,7 @@ export default function FilesPage() {
             {toStr(selected.attachment) && <div><p className="text-xs text-muted-foreground mb-0.5">附件</p><p className="text-xs break-all">{toStr(selected.attachment)}</p></div>}
             {selected.mimeType && <div><p className="text-xs text-muted-foreground mb-0.5">类型</p><p className="text-xs">{toStr(selected.mimeType)}</p></div>}
             {selected.size != null && <div><p className="text-xs text-muted-foreground mb-0.5">大小</p><p className="text-xs">{formatSize(selected.size)}</p></div>}
-            <div><p className="text-xs text-muted-foreground mb-0.5">上传时间</p><p className="text-xs">{new Date(selected.createdAt).toLocaleString("zh-CN")}</p></div>
+            <div><p className="text-xs text-muted-foreground mb-0.5">上传时间</p><p className="text-xs">{safeDate(selected.createdAt, "datetime")}</p></div>
           </div>
         )}
       </DetailSheet>

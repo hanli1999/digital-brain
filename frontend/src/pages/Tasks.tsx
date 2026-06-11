@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiFetch } from "@/config/api";
+import { safeDate } from "@/lib/utils";
 import type { Task } from "@/types/api";
 
 const statusLabels: Record<string, string> = { todo: "待办", in_progress: "进行中", done: "已完成" };
@@ -146,7 +147,7 @@ export default function TasksPage() {
             {selected.description && <div><p className="text-xs text-muted-foreground mb-0.5">描述</p><p className="text-xs whitespace-pre-wrap leading-relaxed">{selected.description}</p></div>}
             {selected.action && <div><p className="text-xs text-muted-foreground mb-0.5">行动</p><p className="text-xs">{selected.action}</p></div>}
             {selected.tags && <div><p className="text-xs text-muted-foreground mb-0.5">标签</p><p className="text-xs">{selected.tags}</p></div>}
-            <div><p className="text-xs text-muted-foreground mb-0.5">创建时间</p><p className="text-xs">{new Date(selected.createdAt).toLocaleString("zh-CN")}</p></div>
+            <div><p className="text-xs text-muted-foreground mb-0.5">创建时间</p><p className="text-xs">{safeDate(selected.createdAt, "datetime")}</p></div>
           </div>
         )}
       </DetailSheet>
