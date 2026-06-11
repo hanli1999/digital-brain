@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { apiFetch } from "@/config/api";
 import type { InboxItem } from "@/types/api";
 import { Sparkles, Loader2, LayoutGrid, List } from "lucide-react";
+import { stripMarkdown, safeDate } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 
 const INTERNAL_TAGS = new Set([
@@ -211,7 +212,7 @@ export default function InboxPage() {
                   <span className="font-medium text-sm line-clamp-2 group-hover:text-foreground transition-colors">{item.title}</span>
                   <StatusBadge status={item.status} />
                 </div>
-                <p className="text-xs text-muted-foreground/80 line-clamp-3 leading-relaxed">{item.content}</p>
+                <p className="text-xs text-muted-foreground/80 line-clamp-3 leading-relaxed">{stripMarkdown(item.content)}</p>
                 <div className="flex items-center gap-2 flex-wrap">
                   {(() => { try { return (JSON.parse(item.tags) as string[]).slice(0, 3); } catch { return []; } })().map((t: string) => (
                     <span key={t} className="text-xs bg-muted/80 px-1.5 py-0.5 rounded-full border border-border/30">{t}</span>
@@ -219,7 +220,7 @@ export default function InboxPage() {
                 </div>
                 <div className="flex items-center justify-between text-xs text-muted-foreground/60">
                   <span>{item.source === "manual" ? "手动" : item.source === "feishu-bot" ? "飞书机器人" : "飞书导入"}</span>
-                  <span>{new Date(item.createdAt).toLocaleDateString("zh-CN")}</span>
+                  <span>{safeDate(item.createdAt)}</span>
                 </div>
                 {item.status === "pending" && (
                   <div onClick={(e) => e.stopPropagation()}>
@@ -235,10 +236,10 @@ export default function InboxPage() {
           columns={[
             { key: "title", header: "标题", cell: (i: InboxItem) => <span className="font-medium line-clamp-1 max-w-[180px]">{i.title}</span>, className: "min-w-[140px] max-w-[180px]" },
             { key: "mood", header: "心情", cell: (i: InboxItem) => <span className="text-xs text-muted-foreground whitespace-nowrap">{i.mood || "-"}</span>, className: "whitespace-nowrap" },
-            { key: "aiSummary", header: "AI 摘要", cell: (i: InboxItem) => <span className="text-xs text-muted-foreground line-clamp-1 max-w-[180px]">{i.aiSummary || "-"}</span>, className: "max-w-[180px]" },
+            { key: "aiSummary", header: "AI 摘要", cell: (i: InboxItem) => <span className="text-xs text-muted-foreground line-clamp-1 max-w-[180px]">{stripMarkdown(i.aiSummary || "") || "-"}</span>, className: "max-w-[180px]" },
             { key: "source", header: "来源", cell: (i: InboxItem) => <span className="text-xs text-muted-foreground whitespace-nowrap">{i.source === "manual" ? "手动" : i.source === "feishu-bot" ? "飞书机器人" : "飞书导入"}</span>, className: "whitespace-nowrap" },
             { key: "status", header: "状态", cell: (i: InboxItem) => <StatusBadge status={i.status} />, className: "whitespace-nowrap" },
-            { key: "createdAt", header: "时间", cell: (i: InboxItem) => <span className="text-xs text-muted-foreground whitespace-nowrap">{new Date(i.createdAt).toLocaleDateString("zh-CN")}</span>, className: "whitespace-nowrap" },
+            { key: "createdAt", header: "时间", cell: (i: InboxItem) => <span className="text-xs text-muted-foreground whitespace-nowrap">{safeDate(i.createdAt)}</span>, className: "whitespace-nowrap" },
             { key: "actions", header: "操作", cell: (i: InboxItem) => i.status === "pending" ? <RouteButton inboxId={i.id} title={i.title} content={i.content} /> : <span className="text-xs text-muted-foreground">→ {i.routeTarget}</span>, className: "whitespace-nowrap" },
           ]}
           data={filteredItems}
@@ -264,7 +265,7 @@ export default function InboxPage() {
               {selectedItem.routedTo && <div><span className="block mb-0.5">已入库至</span><span>{selectedItem.routedTo}</span></div>}
               {selectedItem.collectedAt && <div><span className="block mb-0.5">采集时间</span><span>{selectedItem.collectedAt}</span></div>}
             </div>
-            <p className="text-xs text-muted-foreground">创建于 {new Date(selectedItem.createdAt).toLocaleString("zh-CN")}</p>
+            <p className="text-xs text-muted-foreground">创建于 {safeDate(selectedItem.createdAt, "datetime")}</p>
           </div>
         )}
       </DetailSheet>

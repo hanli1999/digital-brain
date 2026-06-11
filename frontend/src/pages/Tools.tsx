@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { apiFetch } from "@/config/api";
-import { toStr } from "@/lib/utils";
+import { toStr, safeDate } from "@/lib/utils";
 import type { Tool } from "@/types/api";
 
 // 飞书API字段值可能是对象 {text, link} 而非纯字符串，toStr归一化
@@ -95,7 +95,7 @@ export default function ToolsPage() {
             { key: "corePower", header: "核心能力", cell: (t: Tool) => <span className="text-xs text-muted-foreground line-clamp-2 max-w-[180px]">{toStr(t.corePower) || "-"}</span>, className: "max-w-[180px]" },
             { key: "rating", header: "评分", cell: (t: Tool) => <span className="text-xs text-muted-foreground whitespace-nowrap">{toStr(t.rating) || "-"}</span>, className: "whitespace-nowrap" },
             { key: "record", header: "使用记录", cell: (t: Tool) => <span className="text-xs text-muted-foreground line-clamp-2 max-w-[180px]">{toStr(t.record) || "-"}</span>, className: "max-w-[180px]" },
-            { key: "createdAt", header: "时间", cell: (t: Tool) => <span className="text-xs text-muted-foreground whitespace-nowrap">{new Date(t.createdAt).toLocaleDateString("zh-CN")}</span>, className: "whitespace-nowrap" },
+            { key: "createdAt", header: "时间", cell: (t: Tool) => <span className="text-xs text-muted-foreground whitespace-nowrap">{safeDate(t.createdAt)}</span>, className: "whitespace-nowrap" },
           ]}
           data={tools} onRowClick={(t) => setSelectedId(t.id)} onDelete={(id) => deleteMutation.mutate(id)} emptyMessage="暂无工具"
         />
@@ -138,7 +138,7 @@ function FieldRow({ label, value, link, badge, block, date }: { label: string; v
       <p className="text-xs text-muted-foreground mb-0.5">{label}</p>
       {link ? <a href={value} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all text-xs">{value}</a>
        : badge ? <Badge variant="secondary" className="text-xs">{value}</Badge>
-       : date ? <p className="text-xs">{new Date(value).toLocaleString("zh-CN")}</p>
+       : date ? <p className="text-xs">{safeDate(value, "datetime")}</p>
        : block ? <p className="text-xs whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto">{value}</p>
        : <p className="text-xs">{value}</p>}
     </div>
