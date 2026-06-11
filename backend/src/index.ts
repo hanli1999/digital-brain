@@ -29,7 +29,7 @@ const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 app.use(
   "*",
   cors({
-    origin: [FRONTEND_URL, "https://digital-brain-delta.vercel.app", "https://frontend-umber-eta-59.vercel.app", "http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:4173", "http://127.0.0.1:4173"],
+    origin: [FRONTEND_URL, "https://digital-brain-delta.vercel.app", "https://frontend-umber-eta-59.vercel.app", /https:\/\/digital-brain-[a-z0-9]+-hanli-s-projects2\.vercel\.app$/, "http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:4173", "http://127.0.0.1:4173"],
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
   })
