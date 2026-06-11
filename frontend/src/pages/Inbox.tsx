@@ -93,15 +93,43 @@ export default function InboxPage() {
     }
   };
 
+  // 一键入库：先创建收件箱条目，再自动路由到目标模块
+  const autoRouteMutation = useMutation({
+    mutationFn: async (parsed: ParsedCard) => {
+      // 1. 创建收件箱条目
+      const inboxR = await apiFetch("/inbox", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: parsed.title,
+          content: parsed.abstract + (parsed.suggestion ? `\n\n建议：${parsed.suggestion}` : ""),
+          tags: JSON.stringify(parsed.tags),
+          status: "pending",
+          routeTarget: parsed.routeTarget,
+          source: "manual",
+        }),
+      });
+      const inboxItem = await inboxR.json() as { id: string };
+      // 2. 自动路由到目标模块
+      const routeR = await apiFetch(`/inbox/${inboxItem.id}/route`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ routeTarget: parsed.routeTarget }),
+      });
+      return routeR.json() as Promise<{ targetLabel: string }>;
+    },
+    onSuccess: (data: { targetLabel: string }) => {
+      queryClient.invalidateQueries({ queryKey: ["inbox"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      setNlInput(""); setParsed(null);
+      toast.success(`已自动入库到${data.targetLabel || "目标模块"}`);
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "入库失败");
+    },
+  });
+
   const handleConfirmParsed = () => {
     if (!parsed) return;
-    createMutation.mutate({
-      title: parsed.title,
-      content: parsed.abstract + (parsed.suggestion ? `\n\n建议：${parsed.suggestion}` : ""),
-      tags: JSON.stringify(parsed.tags),
-      status: "pending",
-      routeTarget: parsed.routeTarget,
-    });
+    autoRouteMutation.mutate(parsed);
   };
 
   const selectedItem = items.find((i) => i.id === selectedId);
@@ -156,8 +184,8 @@ export default function InboxPage() {
             </div>
             <p className="text-xs text-accent-foreground/80">{parsed.suggestion}</p>
             <div className="flex gap-2 pt-1">
-              <Button size="sm" onClick={handleConfirmParsed} disabled={createMutation.isPending} className="shadow-[0_0_12px_var(--primary)]/20">
-                {createMutation.isPending ? "加入中..." : "确认入库"}
+              <Button size="sm" onClick={handleConfirmParsed} disabled={autoRouteMutation.isPending} className="shadow-[0_0_12px_var(--primary)]/20">
+                {autoRouteMutation.isPending ? "入库中..." : `一键入库 → ${parsed.routeTarget}`}
               </Button>
               <Button size="sm" variant="ghost" onClick={() => setParsed(null)}>重新输入</Button>
             </div>
@@ -224,7 +252,7 @@ export default function InboxPage() {
                 </div>
                 {item.status === "pending" && (
                   <div onClick={(e) => e.stopPropagation()}>
-                    <RouteButton inboxId={item.id} title={item.title} content={item.content} />
+                    <RouteButton inboxId={item.id} title={item.title} content={item.content} aiTarget={item.routeTarget} />
                   </div>
                 )}
               </CardContent>
