@@ -20,7 +20,6 @@ const tables: Record<string, TableConfig> = {
     tableName: "今日收件箱",
     fieldMap: {
       title: "title",
-      content: "title",       // Feishu doesn't have separate content field, title is the main text
       source: "source",
       tags: "keywords",        // Feishu field is "keywords"
       status: "status",
@@ -384,8 +383,8 @@ async function upsertLocalRecord(tableKey: string, feishuId: string, fields: Rec
     case "inbox":
       await prisma.inboxItem.upsert({
         where: { id: feishuId },
-        update: { ...base, id: undefined },
-        create: { id: feishuId, title: (fields.title as string) || "", content: (fields.title as string) || "", source: (fields.source as string) || "feishu", tags: (fields.tags as string) || "[]", imageUrls: "[]", mood: (fields.mood as string) || "", aiSummary: (fields.aiSummary as string) || "", collectedAt: (fields.collectedAt as string) || "", feishuId },
+        update: { ...base, id: undefined, content: fields.title as string || (fields.content as string) || "" },
+        create: { id: feishuId, title: (fields.title as string) || "", content: (fields.content as string) || (fields.title as string) || "", source: (fields.source as string) || "feishu", tags: (fields.tags as string) || "[]", imageUrls: "[]", mood: (fields.mood as string) || "", aiSummary: (fields.aiSummary as string) || "", collectedAt: (fields.collectedAt as string) || "", feishuId },
       });
       break;
     case "task":
