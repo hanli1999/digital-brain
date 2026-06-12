@@ -1,16 +1,17 @@
 import { Hono } from "hono";
-import { listRecords } from "../lib/feishu.js";
-import { toEnglish } from "../lib/field-map.js";
+import { listRecords } from "../lib/db.js";
 
-const SEARCH_TABLES: { key: string; tableId: string; titleField: string; searchFields: string[] }[] = [
-  { key: "inbox", tableId: "tbl2pG26LdF3c3cX", titleField: "title", searchFields: ["title", "content", "aiSummary"] },
-  { key: "tasks", tableId: "tblOyyByZYtZz7dA", titleField: "detail", searchFields: ["detail", "action", "description"] },
-  { key: "tools", tableId: "tbl5r4qZHGnFxUSC", titleField: "name", searchFields: ["name", "corePower", "initScript", "record"] },
-  { key: "methods", tableId: "tbllqXDX0MbmUl07", titleField: "title", searchFields: ["title", "essence"] },
-  { key: "library", tableId: "tblfsL2sxubcpw0i", titleField: "title", searchFields: ["title", "abstract", "snippet", "keywords"] },
-  { key: "ai-engine", tableId: "tblBgV1gLsh22qbV", titleField: "name", searchFields: ["name", "coreIdea", "features", "examples", "scenarios"] },
-  { key: "resources", tableId: "tbl6WHGWD9DKLuJ5", titleField: "name", searchFields: ["name", "detail"] },
-  { key: "files", tableId: "tblMWDRaRN2sY2kb", titleField: "text", searchFields: ["text"] },
+const SEARCH_TABLES: { key: string; dbTable: string; titleField: string; searchFields: string[] }[] = [
+  { key: "inbox", dbTable: "inbox", titleField: "title", searchFields: ["title", "content", "aiSummary"] },
+  { key: "tasks", dbTable: "tasks", titleField: "title", searchFields: ["title", "description", "action"] },
+  { key: "tools", dbTable: "tools", titleField: "name", searchFields: ["name", "corePower", "initScript", "record"] },
+  { key: "methods", dbTable: "methods", titleField: "title", searchFields: ["title", "essence"] },
+  { key: "library", dbTable: "library", titleField: "title", searchFields: ["title", "abstract", "snippet", "keywords"] },
+  { key: "ai-engine", dbTable: "ai-engine", titleField: "name", searchFields: ["name", "coreIdea", "features", "examples", "scenarios"] },
+  { key: "resources", dbTable: "resources", titleField: "name", searchFields: ["name", "detail"] },
+  { key: "files", dbTable: "files", titleField: "text", searchFields: ["text"] },
+  { key: "calendar", dbTable: "calendar", titleField: "title", searchFields: ["title", "content", "description"] },
+  { key: "jiyuanlu", dbTable: "jiyuanlu", titleField: "detail", searchFields: ["detail", "description", "action"] },
 ];
 
 const app = new Hono();
@@ -20,22 +21,20 @@ app.get("/", async (c) => {
   if (!q) return c.json([]);
 
   const tableResults = await Promise.all(
-    SEARCH_TABLES.map(async ({ key, tableId, titleField, searchFields }) => {
+    SEARCH_TABLES.map(async ({ key, dbTable, titleField, searchFields }) => {
       try {
-        const records = await listRecords(tableId);
-        const mapped = await Promise.all(records.map((r) => toEnglish(tableId, r)));
+        const records = await listRecords(dbTable);
 
-        return mapped
-          .filter((record) => {
+        return records
+          .filter((record: Record<string, unknown>) => {
             for (const sf of searchFields) {
               const v = record[sf];
               if (typeof v === "string" && v.toLowerCase().includes(q)) return true;
             }
             return false;
           })
-          .map((record) => {
+          .map((record: Record<string, unknown>) => {
             const title = String(record[titleField] || "").trim() || "(无标题)";
-            // Find the matching snippet
             let snippet = title;
             for (const sf of searchFields) {
               const v = record[sf];
