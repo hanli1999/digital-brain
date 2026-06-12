@@ -203,6 +203,10 @@ function toLocalFields(tableKey: string, feishuFields: Record<string, unknown>):
     if (localVal && typeof localVal === "object" && "link" in (localVal as Record<string, unknown>)) {
       localVal = (localVal as Record<string, unknown>).link;
     }
+    // Feishu returns timestamps/numbers, but Prisma schema stores as String
+    if (typeof localVal === "number") {
+      localVal = String(localVal);
+    }
     data[localKey] = localVal;
   }
   return data;
