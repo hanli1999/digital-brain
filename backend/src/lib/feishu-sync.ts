@@ -38,7 +38,6 @@ const tables: Record<string, TableConfig> = {
     fieldMap: {
       title: "title",
       description: "description",
-      detail: "detail",
       action: "action",
       status: "status",
     },
@@ -76,7 +75,6 @@ const tables: Record<string, TableConfig> = {
       author: "author",
       abstract: "abstract",
       importance: "importance",
-      ingestedAt: "ingestedAt",
       publishedAt: "publishedAt",
     },
     skipFields: ["id", "feishuId", "createdAt", "updatedAt", "url", "keywords", "type", "status", "snippet", "tags"],
@@ -121,8 +119,11 @@ const tables: Record<string, TableConfig> = {
       name: "name",
       detail: "detail",
       stock: "stock",
+      url: "url",
+      type: "type",
+      status: "status",
     },
-    skipFields: ["id", "feishuId", "createdAt", "updatedAt", "description", "category", "url", "type", "status", "usedAt", "tags"],
+    skipFields: ["id", "feishuId", "createdAt", "updatedAt", "description", "category", "usedAt", "tags"],
   },
 };
 
@@ -433,10 +434,10 @@ async function upsertLocalRecord(tableKey: string, feishuId: string, fields: Rec
       });
       break;
     case "library":
-      await prisma.metric.upsert({
+      await prisma.resource.upsert({
         where: { id: feishuId },
         update: { ...base, id: undefined },
-        create: { id: feishuId, name: (fields.name as string) || "", value: 0, unit: "", category: "", feishuId },
+        create: { id: feishuId, name: (fields.name as string) || "", detail: (fields.detail as string) || "", stock: (fields.stock as string) || "", url: (fields.url as string) || "", type: (fields.type as string) || "", status: (fields.status as string) || "", tags: "[]", feishuId },
       });
       break;
   }

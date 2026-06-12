@@ -61,7 +61,7 @@ app.post("/export/:table", async (c) => {
     case "file": records = await prisma.fileAsset.findMany(); break;
     case "calendar": records = await prisma.calendarEvent.findMany(); break;
     case "ai_mechanism": records = await prisma.aiMechanism.findMany(); break;
-    case "library": records = await prisma.metric.findMany(); break;
+    case "library": records = await prisma.resource.findMany(); break;
   }
 
   let synced = 0;
@@ -87,7 +87,7 @@ app.post("/export/:table", async (c) => {
           case "file": await prisma.fileAsset.update({ where: { id: record.id as string }, data: updateData }); break;
           case "calendar": await prisma.calendarEvent.update({ where: { id: record.id as string }, data: updateData }); break;
           case "ai_mechanism": await prisma.aiMechanism.update({ where: { id: record.id as string }, data: updateData }); break;
-          case "library": await prisma.metric.update({ where: { id: record.id as string }, data: updateData }); break;
+          case "library": await prisma.resource.update({ where: { id: record.id as string }, data: updateData }); break;
         }
         synced++;
       }
