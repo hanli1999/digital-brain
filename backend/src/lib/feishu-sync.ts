@@ -19,102 +19,110 @@ const tables: Record<string, TableConfig> = {
     tableId: "tbl2pG26LdF3c3cX",
     tableName: "今日收件箱",
     fieldMap: {
-      title: "收集内容",
-      content: "收集内容",
-      source: "来源",
-      tags: "初步分类",
-      status: "处理状态",
-      routeTarget: "归入建议",
-      routedTo: "归位去处",
+      title: "title",
+      content: "title",       // Feishu doesn't have separate content field, title is the main text
+      source: "source",
+      tags: "keywords",        // Feishu field is "keywords"
+      status: "status",
+      routeTarget: "routeTarget",
+      routedTo: "routedTo",
+      aiSummary: "aiSummary",
+      mood: "mood",
+      collectedAt: "collectedAt",
     },
-    skipFields: ["id", "feishuId", "createdAt", "updatedAt", "imageUrls"],
+    skipFields: ["id", "feishuId", "createdAt", "updatedAt", "imageUrls", "sourceUrl"],
   },
   task: {
     tableId: "tblOyyByZYtZz7dA",
     tableName: "任务管理",
     fieldMap: {
-      title: "任务名称",
-      description: "详细内容",
-      status: "任务状态",
-      tags: "标签",
+      title: "title",
+      description: "description",
+      detail: "detail",
+      action: "action",
+      status: "status",
     },
-    skipFields: ["id", "feishuId", "createdAt", "updatedAt", "dueDate", "priority"],
+    skipFields: ["id", "feishuId", "createdAt", "updatedAt", "dueDate", "priority", "tags"],
   },
   tool: {
     tableId: "tbl5r4qZHGnFxUSC",
     tableName: "工具资源库",
     fieldMap: {
-      name: "工具名称",
-      description: "核心功能",
-      category: "工具分类",
-      url: "调用链接",
+      name: "name",
+      url: "url",
+      corePower: "corePower",
+      initScript: "initScript",
+      rating: "rating",
+      record: "record",
     },
-    skipFields: ["id", "feishuId", "createdAt", "updatedAt", "tags"],
+    skipFields: ["id", "feishuId", "createdAt", "updatedAt", "category", "description", "tags"],
   },
   method: {
     tableId: "tbllqXDX0MbmUl07",
     tableName: "方法流程库",
     fieldMap: {
-      title: "方法名称",
-      content: "核心精要",
-      status: "掌握状态",
+      title: "title",
+      essence: "essence",
+      learnedDate: "learnedDate",
+      related: "related",
     },
-    skipFields: ["id", "feishuId", "createdAt", "updatedAt", "tags"],
+    skipFields: ["id", "feishuId", "createdAt", "updatedAt", "content", "status", "type", "storage", "tags"],
   },
   document: {
     tableId: "tblfsL2sxubcpw0i",
     tableName: "文献库",
     fieldMap: {
-      title: "标题",
-      author: "作者/来源",
-      abstract: "摘要/核心观点",
-      tags: "核心词",
+      title: "title",
+      author: "author",
+      abstract: "abstract",
+      importance: "importance",
+      ingestedAt: "ingestedAt",
+      publishedAt: "publishedAt",
     },
-    skipFields: ["id", "feishuId", "createdAt", "updatedAt"],
+    skipFields: ["id", "feishuId", "createdAt", "updatedAt", "url", "keywords", "type", "status", "snippet", "tags"],
   },
   file: {
     tableId: "tblMWDRaRN2sY2kb",
     tableName: "文件管理",
     fieldMap: {
-      filename: "文本",
+      filename: "text",
     },
-    skipFields: ["id", "feishuId", "createdAt", "updatedAt", "size", "mimeType", "url", "tags"],
+    skipFields: ["id", "feishuId", "createdAt", "updatedAt", "size", "mimeType", "url", "tags", "attachment", "date"],
   },
   calendar: {
     tableId: "tblxDBsdrChYhST8",
     tableName: "任务清单",
     fieldMap: {
-      title: "任务标题",
-      description: "任务内容",
-      startTime: "任务开始时间",
-      endTime: "任务截止时间",
-      status: "任务状态",
-      priority: "任务优先级",
+      title: "title",
+      startTime: "startTime",
+      endTime: "endTime",
+      status: "status",
+      priority: "priority",
+      projectId: "projectId",
+      allDay: "allDay",
     },
-    skipFields: ["id", "feishuId", "createdAt", "updatedAt", "allDay", "reminder"],
+    skipFields: ["id", "feishuId", "createdAt", "updatedAt", "description", "content", "reminder"],
   },
   ai_mechanism: {
     tableId: "tblBgV1gLsh22qbV",
     tableName: "AI Agent 机制库",
     fieldMap: {
-      name: "机制名称",
-      type: "所属组件",
-      content: "核心理念",
-      parameters: "详细关键特征",
+      name: "name",
+      coreIdea: "coreIdea",
+      featuresDetail: "featuresDetail",
+      scenariosDetail: "scenariosDetail",
     },
-    skipFields: ["id", "feishuId", "createdAt", "updatedAt"],
+    skipFields: ["id", "feishuId", "createdAt", "updatedAt", "component", "features", "examples", "scenarios", "source", "tags", "type", "content", "parameters"],
   },
   library: {
     tableId: "tbl6WHGWD9DKLuJ5",
     tableName: "资源管理",
     fieldMap: {
-      name: "资源名称",
-      description: "资源详情",
-      category: "资源类型",
-      url: "获取链接",
-      status: "资源状态",
+      name: "name",
+      detail: "detail",
+      stock: "stock",
     },
-    skipFields: ["id", "feishuId", "createdAt", "updatedAt"],
+    skipFields: ["id", "feishuId", "createdAt", "updatedAt", "description", "category", "url", "type", "status", "usedAt", "tags"],
   },
 };
 
@@ -370,65 +378,65 @@ async function upsertLocalRecord(tableKey: string, feishuId: string, fields: Rec
   switch (tableKey) {
     case "inbox":
       await prisma.inboxItem.upsert({
-        where: { id: (fields.title as string) || feishuId },
+        where: { id: feishuId },
         update: { ...base, id: undefined },
-        create: { id: feishuId, title: (fields.title as string) || "", content: (fields.content as string) || "", source: (fields.source as string) || "feishu", tags: (fields.tags as string) || "[]", imageUrls: (fields.imageUrls as string) || "[]", feishuId },
+        create: { id: feishuId, title: (fields.title as string) || "", content: (fields.title as string) || "", source: (fields.source as string) || "feishu", tags: (fields.tags as string) || "[]", imageUrls: "[]", mood: (fields.mood as string) || "", aiSummary: (fields.aiSummary as string) || "", collectedAt: (fields.collectedAt as string) || "", feishuId },
       });
       break;
     case "task":
       await prisma.task.upsert({
         where: { id: feishuId },
-        update: { title: (fields.title as string) || "", description: (fields.description as string) || "", status: (fields.status as string) || "todo", action: (fields.action as string) || "", tags: (fields.tags as string) || "[]", feishuId },
-        create: { id: feishuId, title: (fields.title as string) || "", description: (fields.description as string) || "", tags: (fields.tags as string) || "[]", feishuId },
+        update: { ...base, id: undefined },
+        create: { id: feishuId, title: (fields.title as string) || "", description: (fields.description as string) || "", detail: (fields.detail as string) || "", action: (fields.action as string) || "", status: (fields.status as string) || "todo", tags: "[]", feishuId },
       });
       break;
     case "tool":
       await prisma.tool.upsert({
         where: { id: feishuId },
-        update: { name: (fields.name as string) || "", description: (fields.description as string) || "", category: (fields.category as string) || "", url: (fields.url as string) || "", tags: (fields.tags as string) || "[]", feishuId },
-        create: { id: feishuId, name: (fields.name as string) || "", description: (fields.description as string) || "", tags: (fields.tags as string) || "[]", feishuId },
+        update: { ...base, id: undefined },
+        create: { id: feishuId, name: (fields.name as string) || "", url: (fields.url as string) || "", corePower: (fields.corePower as string) || "", initScript: (fields.initScript as string) || "", rating: (fields.rating as string) || "", record: (fields.record as string) || "", description: "", category: "", tags: "[]", feishuId },
       });
       break;
     case "method":
       await prisma.method.upsert({
         where: { id: feishuId },
-        update: { title: (fields.title as string) || "", essence: (fields.essence as string) || "", tags: (fields.tags as string) || "[]", feishuId },
-        create: { id: feishuId, title: (fields.title as string) || "", tags: (fields.tags as string) || "[]", feishuId },
+        update: { ...base, id: undefined },
+        create: { id: feishuId, title: (fields.title as string) || "", essence: (fields.essence as string) || "", learnedDate: (fields.learnedDate as string) || "", related: (fields.related as string) || "", content: "", status: "todo", type: "", storage: "", tags: "[]", feishuId },
       });
       break;
     case "document":
       await prisma.document.upsert({
         where: { id: feishuId },
-        update: { title: (fields.title as string) || "", abstract: (fields.abstract as string) || "", author: (fields.author as string) || "", tags: (fields.tags as string) || "[]", feishuId },
-        create: { id: feishuId, title: (fields.title as string) || "", tags: (fields.tags as string) || "[]", feishuId },
+        update: { ...base, id: undefined },
+        create: { id: feishuId, title: (fields.title as string) || "", author: (fields.author as string) || "", abstract: (fields.abstract as string) || "", importance: (fields.importance as string) || "", ingestedAt: (fields.ingestedAt as string) || "", publishedAt: (fields.publishedAt as string) || "", url: "", keywords: "", type: "", status: "", snippet: "", tags: "[]", feishuId },
       });
       break;
     case "file":
       await prisma.fileAsset.upsert({
         where: { id: feishuId },
-        update: { filename: (fields.filename as string) || "", size: (fields.size as number) || 0, mimeType: (fields.mimeType as string) || "", url: (fields.url as string) || "", tags: (fields.tags as string) || "[]", feishuId },
-        create: { id: feishuId, filename: (fields.filename as string) || "", size: 0, mimeType: "", url: "", tags: "[]", feishuId },
+        update: { ...base, id: undefined },
+        create: { id: feishuId, filename: (fields.filename as string) || "", text: (fields.text as string) || "", size: 0, mimeType: "", url: "", date: "", tags: "[]", feishuId },
       });
       break;
     case "calendar":
       await prisma.calendarEvent.upsert({
         where: { id: feishuId },
-        update: { title: (fields.title as string) || "", description: (fields.description as string) || "", feishuId },
-        create: { id: feishuId, title: (fields.title as string) || "", startTime: (fields.startTime as string) || "", feishuId },
+        update: { ...base, id: undefined },
+        create: { id: feishuId, title: (fields.title as string) || "", startTime: (fields.startTime as string) || "2025-01-01", endTime: (fields.endTime as string) || "", description: "", content: "", status: "", priority: "", allDay: "", projectId: (fields.projectId as string) || "", feishuId },
       });
       break;
     case "ai_mechanism":
       await prisma.aiMechanism.upsert({
         where: { id: feishuId },
-        update: { name: (fields.name as string) || "", component: (fields.component as string) || "", coreIdea: (fields.coreIdea as string) || "", tags: (fields.tags as string) || "[]", feishuId },
-        create: { id: feishuId, name: (fields.name as string) || "", feishuId },
+        update: { ...base, id: undefined },
+        create: { id: feishuId, name: (fields.name as string) || "", coreIdea: (fields.coreIdea as string) || "", featuresDetail: (fields.featuresDetail as string) || "", scenariosDetail: (fields.scenariosDetail as string) || "", component: "", features: "", examples: "", scenarios: "", source: "", tags: "[]", feishuId },
       });
       break;
     case "library":
       await prisma.metric.upsert({
         where: { id: feishuId },
-        update: { name: (fields.name as string) || "", value: (fields.value as number) || 0, unit: (fields.unit as string) || "", category: (fields.category as string) || "", feishuId },
-        create: { id: feishuId, name: (fields.name as string) || "", value: 0, feishuId },
+        update: { ...base, id: undefined },
+        create: { id: feishuId, name: (fields.name as string) || "", detail: (fields.detail as string) || "", stock: (fields.stock as string) || "", url: "", type: "", status: "", tags: "[]", feishuId },
       });
       break;
   }
