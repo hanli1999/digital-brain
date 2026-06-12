@@ -23,6 +23,7 @@ import syncRoutes from "./routes/sync.js";
 import insightRoutes from "./routes/insight.js";
 import jiyuanluRoutes from "./routes/jiyuanlu.js";
 import webhookRoutes from "./routes/webhook.js";
+import { startSyncCron } from "./lib/cron-sync.js";
 
 const app = new Hono();
 
@@ -107,3 +108,6 @@ const port = Number(process.env.PORT) || 3001;
 console.log(`Backend running on http://localhost:${port}`);
 
 serve({ fetch: app.fetch, port });
+
+// Start Feishu auto-sync cron (v1: 5min polling, skip on failure)
+startSyncCron(5);
