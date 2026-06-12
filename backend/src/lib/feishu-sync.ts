@@ -387,7 +387,7 @@ async function upsertLocalRecord(tableKey: string, feishuId: string, fields: Rec
       await prisma.task.upsert({
         where: { id: feishuId },
         update: { ...base, id: undefined },
-        create: { id: feishuId, title: (fields.title as string) || "", description: (fields.description as string) || "", detail: (fields.detail as string) || "", action: (fields.action as string) || "", status: (fields.status as string) || "todo", tags: "[]", feishuId },
+        create: { id: feishuId, title: (fields.title as string) || "", description: (fields.description as string) || "", action: (fields.action as string) || "", status: (fields.status as string) || "todo", tags: "[]", feishuId },
       });
       break;
     case "tool":
@@ -401,14 +401,14 @@ async function upsertLocalRecord(tableKey: string, feishuId: string, fields: Rec
       await prisma.method.upsert({
         where: { id: feishuId },
         update: { ...base, id: undefined },
-        create: { id: feishuId, title: (fields.title as string) || "", essence: (fields.essence as string) || "", learnedDate: (fields.learnedDate as string) || "", related: (fields.related as string) || "", content: "", status: "todo", type: "", storage: "", tags: "[]", feishuId },
+        create: { id: feishuId, title: (fields.title as string) || "", essence: (fields.essence as string) || "", learnedDate: (fields.learnedDate as string) || "", related: (fields.related as string) || "", status: "todo", type: "", storage: "", tags: "[]", feishuId },
       });
       break;
     case "document":
       await prisma.document.upsert({
         where: { id: feishuId },
         update: { ...base, id: undefined },
-        create: { id: feishuId, title: (fields.title as string) || "", author: (fields.author as string) || "", abstract: (fields.abstract as string) || "", importance: (fields.importance as string) || "", ingestedAt: (fields.ingestedAt as string) || "", publishedAt: (fields.publishedAt as string) || "", url: "", keywords: "", type: "", status: "", snippet: "", tags: "[]", feishuId },
+        create: { id: feishuId, title: (fields.title as string) || "", author: (fields.author as string) || "", abstract: (fields.abstract as string) || "", importance: (fields.importance as string) || "", publishedAt: (fields.publishedAt as string) || "", url: "", keywords: "", type: "", status: "", snippet: "", tags: "[]", feishuId },
       });
       break;
     case "file":
@@ -436,7 +436,7 @@ async function upsertLocalRecord(tableKey: string, feishuId: string, fields: Rec
       await prisma.metric.upsert({
         where: { id: feishuId },
         update: { ...base, id: undefined },
-        create: { id: feishuId, name: (fields.name as string) || "", detail: (fields.detail as string) || "", stock: (fields.stock as string) || "", url: "", type: "", status: "", tags: "[]", feishuId },
+        create: { id: feishuId, name: (fields.name as string) || "", value: 0, unit: "", category: "", feishuId },
       });
       break;
   }
