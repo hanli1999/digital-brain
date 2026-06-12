@@ -41,6 +41,10 @@ model Tool {
   category    String   @default("")
   description String   @default("")
   url         String   @default("")
+  corePower   String   @default("")
+  initScript  String   @default("")
+  rating      String   @default("")
+  record      String   @default("")
   tags        String   @default("[]")
   feishuId    String?
   createdAt   DateTime @default(now())

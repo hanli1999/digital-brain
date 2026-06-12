@@ -1,15 +1,13 @@
 import { Hono } from "hono";
-import { listRecords, getRecord, createRecord, updateRecord, deleteRecord } from "../lib/feishu.js";
-import { toEnglish, toFeishuFields } from "../lib/field-map.js";
+import { listRecords, getRecord, createRecord, updateRecord, deleteRecord } from "../lib/db.js";
 
-const TABLE = "tbl5r4qZHGnFxUSC";
+const TABLE = "tools";
 
 const app = new Hono();
 
 app.get("/", async (c) => {
   const records = await listRecords(TABLE);
-  const mapped = await Promise.all(records.map((r) => toEnglish(TABLE, r)));
-  return c.json(mapped);
+  return c.json(records);
 });
 
 app.post("/", async (c) => {
@@ -17,7 +15,7 @@ app.post("/", async (c) => {
   const input: Record<string, unknown> = {};
   if (body.name) input.name = body.name;
   if (body.url) {
-    input.url = typeof body.url === "string" ? { link: body.url, text: body.url } : body.url;
+    input.url = typeof body.url === "string" ? body.url : (body.url as any).link || body.url;
   }
   if (body.category) input.category = body.category;
   if (body.corePower) input.corePower = body.corePower;
@@ -25,16 +23,15 @@ app.post("/", async (c) => {
   if (body.rating) input.rating = body.rating;
   if (body.record) input.record = body.record;
 
-  const fields = await toFeishuFields(TABLE, input);
-  const record = await createRecord(TABLE, fields);
+  const record = await createRecord(TABLE, input);
   if (!record) return c.json({ error: "Failed to create" }, 500);
-  return c.json(await toEnglish(TABLE, record), 201);
+  return c.json(record, 201);
 });
 
 app.get("/:id", async (c) => {
   const record = await getRecord(TABLE, c.req.param("id"));
   if (!record) return c.json({ error: "Not found" }, 404);
-  return c.json(await toEnglish(TABLE, record));
+  return c.json(record);
 });
 
 app.put("/:id", async (c) => {
@@ -42,7 +39,7 @@ app.put("/:id", async (c) => {
   const input: Record<string, unknown> = {};
   if (body.name !== undefined) input.name = body.name;
   if (body.url !== undefined) {
-    input.url = typeof body.url === "string" ? { link: body.url, text: body.url } : body.url;
+    input.url = typeof body.url === "string" ? body.url : (body.url as any).link || body.url;
   }
   if (body.category !== undefined) input.category = body.category;
   if (body.corePower !== undefined) input.corePower = body.corePower;
@@ -50,10 +47,9 @@ app.put("/:id", async (c) => {
   if (body.rating !== undefined) input.rating = body.rating;
   if (body.record !== undefined) input.record = body.record;
 
-  const fields = await toFeishuFields(TABLE, input);
-  const record = await updateRecord(TABLE, c.req.param("id"), fields);
+  const record = await updateRecord(TABLE, c.req.param("id"), input);
   if (!record) return c.json({ error: "Update failed" }, 500);
-  return c.json(await toEnglish(TABLE, record));
+  return c.json(record);
 });
 
 app.delete("/:id", async (c) => {
