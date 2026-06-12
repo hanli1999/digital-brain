@@ -100,6 +100,34 @@ app.post("/export/:table", async (c) => {
   return c.json({ table, synced, errors, total: records.length });
 });
 
+// GET /api/sync/fields/:table — debug: show raw Feishu field names for first record
+app.get("/fields/:table", async (c) => {
+  if (!isFeishuConfigured()) return c.json({ error: "Feishu not configured" }, 400);
+  const table = c.req.param("table");
+  const cfg = tables[table];
+  if (!cfg) return c.json({ error: `Unknown table: ${table}` }, 400);
+
+  const { feishuRequest } = await import("../lib/feishu.js");
+  const APP_TOKEN = "MDmcwLhJIiwpK5k5yuecRWu4nee";
+  const data = await feishuRequest("GET",
+    `/bitable/v1/apps/${APP_TOKEN}/tables/${cfg.tableId}/records?page_size=1`
+  );
+  if (data.code !== 0) return c.json({ error: data.msg || "Feishu error", code: data.code });
+
+  const items = data.data?.items ?? [];
+  if (items.length === 0) return c.json({ error: "No records in table" });
+
+  const fields = items[0].fields ?? {};
+  return c.json({
+    table,
+    tableName: cfg.tableName,
+    fieldNames: Object.keys(fields),
+    sampleFields: Object.fromEntries(
+      Object.entries(fields).map(([k, v]) => [k, typeof v === "string" ? v.slice(0, 80) : v])
+    ),
+  });
+});
+
 // GET /api/sync/logs — recent sync logs
 app.get("/logs", async (c) => {
   const logs = await prisma.feishuSyncLog.findMany({
