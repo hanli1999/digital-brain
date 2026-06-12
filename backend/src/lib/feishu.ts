@@ -66,3 +66,12 @@ export async function deleteRecord(tableId: string, recordId: string): Promise<b
   const data = await feishuRequest("DELETE", `/bitable/v1/apps/${APP_TOKEN}/tables/${tableId}/records/${recordId}`);
   return data?.code === 0;
 }
+
+// 飞书原生全文搜索（POST endpoint，与 GET listRecords 不同）
+export async function searchRecords(tableId: string, search: string, pageSize = 50): Promise<FeishuRecord[]> {
+  const data = await feishuRequest("POST", `/bitable/v1/apps/${APP_TOKEN}/tables/${tableId}/records/search`, {
+    search,
+    page_size: pageSize,
+  });
+  return (data?.data?.items as FeishuRecord[]) || [];
+}

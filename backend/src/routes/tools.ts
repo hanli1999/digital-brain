@@ -16,7 +16,9 @@ app.post("/", async (c) => {
   const body = await c.req.json();
   const input: Record<string, unknown> = {};
   if (body.name) input.name = body.name;
-  if (body.url) input.url = body.url;
+  if (body.url) {
+    input.url = typeof body.url === "string" ? { link: body.url, text: body.url } : body.url;
+  }
   if (body.category) input.category = body.category;
   if (body.corePower) input.corePower = body.corePower;
   if (body.initScript) input.initScript = body.initScript;
@@ -39,7 +41,9 @@ app.put("/:id", async (c) => {
   const body = await c.req.json();
   const input: Record<string, unknown> = {};
   if (body.name !== undefined) input.name = body.name;
-  if (body.url !== undefined) input.url = body.url;
+  if (body.url !== undefined) {
+    input.url = typeof body.url === "string" ? { link: body.url, text: body.url } : body.url;
+  }
   if (body.category !== undefined) input.category = body.category;
   if (body.corePower !== undefined) input.corePower = body.corePower;
   if (body.initScript !== undefined) input.initScript = body.initScript;

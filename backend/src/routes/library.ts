@@ -17,7 +17,9 @@ app.post("/", async (c) => {
   const input: Record<string, unknown> = {};
   if (body.title) input.title = body.title;
   if (body.author) input.author = body.author;
-  if (body.url) input.url = body.url;
+  if (body.url) {
+    input.url = typeof body.url === "string" ? { link: body.url, text: body.url } : body.url;
+  }
   if (body.abstract) input.abstract = body.abstract;
   if (body.keywords) input.keywords = typeof body.keywords === "string" ? JSON.parse(body.keywords) : body.keywords;
   if (body.type) input.type = body.type;
@@ -43,7 +45,9 @@ app.put("/:id", async (c) => {
   const input: Record<string, unknown> = {};
   if (body.title !== undefined) input.title = body.title;
   if (body.author !== undefined) input.author = body.author;
-  if (body.url !== undefined) input.url = body.url;
+  if (body.url !== undefined) {
+    input.url = typeof body.url === "string" ? { link: body.url, text: body.url } : body.url;
+  }
   if (body.abstract !== undefined) input.abstract = body.abstract;
   if (body.keywords !== undefined) input.keywords = typeof body.keywords === "string" ? JSON.parse(body.keywords) : body.keywords;
   if (body.type !== undefined) input.type = body.type;
