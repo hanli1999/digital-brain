@@ -15,7 +15,7 @@ function str(v: unknown): string {
 async function migrateTable(
   feishuTableId: string,
   dbTable: string,
-  fieldMap: Record<string, string>,  // Feishu field_name → Prisma field
+  fieldMap: Record<string, string>,
   requiredField?: string,             // fallback if empty
 ) {
   const records = await listRecords(feishuTableId, { page_size: "200" });
@@ -170,7 +170,7 @@ const tables = [
 async function main() {
   let total = 0;
   for (const t of tables) {
-    total += await migrateTable(t.feishuTableId, t.dbTable, t.fieldMap, t.required);
+    total += await migrateTable(t.feishuTableId, t.dbTable, t.fieldMap as unknown as Record<string, string>, t.required);
   }
   console.log(`\nTotal: ${total} records migrated.`);
   await prisma.$disconnect();
