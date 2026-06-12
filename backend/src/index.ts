@@ -21,6 +21,7 @@ import searchRoutes from "./routes/search.js";
 import settingsRoutes from "./routes/settings.js";
 import syncRoutes from "./routes/sync.js";
 import insightRoutes from "./routes/insight.js";
+import jiyuanluRoutes from "./routes/jiyuanlu.js";
 import webhookRoutes from "./routes/webhook.js";
 
 const app = new Hono();
@@ -90,6 +91,8 @@ app.use("/api/sync/*", authMiddleware);
 app.route("/api/sync", syncRoutes);
 app.use("/api/insight/*", authMiddleware);
 app.route("/api/insight", insightRoutes);
+app.use("/api/jiyuanlu/*", authMiddleware);
+app.route("/api/jiyuanlu", jiyuanluRoutes);
 app.use("/api/webhook/*", authMiddleware);
 app.route("/api/webhook", webhookRoutes);
 

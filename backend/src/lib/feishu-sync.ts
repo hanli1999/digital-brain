@@ -378,7 +378,7 @@ async function upsertLocalRecord(tableKey: string, feishuId: string, fields: Rec
     case "task":
       await prisma.task.upsert({
         where: { id: feishuId },
-        update: { title: (fields.title as string) || "", description: (fields.description as string) || "", status: (fields.status as string) || "todo", priority: (fields.priority as string) || "normal", tags: (fields.tags as string) || "[]", feishuId },
+        update: { title: (fields.title as string) || "", description: (fields.description as string) || "", status: (fields.status as string) || "todo", action: (fields.action as string) || "", tags: (fields.tags as string) || "[]", feishuId },
         create: { id: feishuId, title: (fields.title as string) || "", description: (fields.description as string) || "", tags: (fields.tags as string) || "[]", feishuId },
       });
       break;
@@ -392,7 +392,7 @@ async function upsertLocalRecord(tableKey: string, feishuId: string, fields: Rec
     case "method":
       await prisma.method.upsert({
         where: { id: feishuId },
-        update: { title: (fields.title as string) || "", content: (fields.content as string) || "", tags: (fields.tags as string) || "[]", feishuId },
+        update: { title: (fields.title as string) || "", essence: (fields.essence as string) || "", tags: (fields.tags as string) || "[]", feishuId },
         create: { id: feishuId, title: (fields.title as string) || "", tags: (fields.tags as string) || "[]", feishuId },
       });
       break;
@@ -414,14 +414,14 @@ async function upsertLocalRecord(tableKey: string, feishuId: string, fields: Rec
       await prisma.calendarEvent.upsert({
         where: { id: feishuId },
         update: { title: (fields.title as string) || "", description: (fields.description as string) || "", feishuId },
-        create: { id: feishuId, title: (fields.title as string) || "", startTime: new Date(), feishuId },
+        create: { id: feishuId, title: (fields.title as string) || "", startTime: (fields.startTime as string) || "", feishuId },
       });
       break;
     case "ai_mechanism":
       await prisma.aiMechanism.upsert({
         where: { id: feishuId },
-        update: { name: (fields.name as string) || "", type: (fields.type as string) || "prompt", content: (fields.content as string) || "", parameters: (fields.parameters as string) || "{}", feishuId },
-        create: { id: feishuId, name: (fields.name as string) || "", content: "", feishuId },
+        update: { name: (fields.name as string) || "", component: (fields.component as string) || "", coreIdea: (fields.coreIdea as string) || "", tags: (fields.tags as string) || "[]", feishuId },
+        create: { id: feishuId, name: (fields.name as string) || "", feishuId },
       });
       break;
     case "library":

@@ -1,17 +1,14 @@
 import { Hono } from "hono";
-import { listRecords, getRecord, createRecord, updateRecord, deleteRecord } from "../lib/feishu.js";
-import { toEnglish, toFeishuFields } from "../lib/field-map.js";
+import { listRecords, getRecord, createRecord, updateRecord, deleteRecord } from "../lib/db.js";
 import { ROUTE_TARGETS, resolveTarget } from "../lib/route-targets.js";
-import { prisma } from "../lib/prisma.js";
 
-const TABLE = "tbl2pG26LdF3c3cX";
+const TABLE = "inbox";
 
 const app = new Hono();
 
 app.get("/", async (c) => {
   const records = await listRecords(TABLE);
-  const mapped = await Promise.all(records.map((r) => toEnglish(TABLE, r)));
-  return c.json(mapped);
+  return c.json(records);
 });
 
 app.post("/", async (c) => {
@@ -30,16 +27,15 @@ app.post("/", async (c) => {
   if (body.aiSummary) input.aiSummary = body.aiSummary;
   if (body.collectedAt) input.collectedAt = body.collectedAt;
 
-  const fields = await toFeishuFields(TABLE, input);
-  const record = await createRecord(TABLE, fields);
+  const record = await createRecord(TABLE, input);
   if (!record) return c.json({ error: "Failed to create" }, 500);
-  return c.json(await toEnglish(TABLE, record), 201);
+  return c.json(record, 201);
 });
 
 app.get("/:id", async (c) => {
   const record = await getRecord(TABLE, c.req.param("id"));
   if (!record) return c.json({ error: "Not found" }, 404);
-  return c.json(await toEnglish(TABLE, record));
+  return c.json(record);
 });
 
 app.put("/:id", async (c) => {
@@ -58,10 +54,9 @@ app.put("/:id", async (c) => {
   if (body.aiSummary !== undefined) input.aiSummary = body.aiSummary;
   if (body.collectedAt !== undefined) input.collectedAt = body.collectedAt;
 
-  const fields = await toFeishuFields(TABLE, input);
-  const record = await updateRecord(TABLE, c.req.param("id"), fields);
+  const record = await updateRecord(TABLE, c.req.param("id"), input);
   if (!record) return c.json({ error: "Update failed" }, 500);
-  return c.json(await toEnglish(TABLE, record));
+  return c.json(record);
 });
 
 app.delete("/:id", async (c) => {
@@ -75,64 +70,40 @@ app.post("/:id/route", async (c) => {
   const rawTarget = body.routeTarget as string;
   if (!rawTarget) return c.json({ error: "Missing routeTarget" }, 400);
 
-  // 统一解析 target：AI 中文名 → 模块 key，前端英文 key → 直接使用
   const targetKey = resolveTarget(rawTarget) || rawTarget;
   const cfg = ROUTE_TARGETS[targetKey];
   if (!cfg) return c.json({ error: `Unknown target: ${targetKey}` }, 400);
 
-  // 读取收件箱记录
   const inboxRecord = await getRecord(TABLE, c.req.param("id"));
   if (!inboxRecord) return c.json({ error: "Inbox record not found" }, 404);
-  const inbox = await toEnglish(TABLE, inboxRecord) as Record<string, unknown>;
+  const inbox = inboxRecord as Record<string, unknown>;
 
-  let routedId: string | null = null;
-
-  // 创建目标记录
-  if (cfg.prismaModel === "insight") {
-    const item = await prisma.insight.create({
-      data: {
-        title: String(inbox.title || ""),
-        content: String(inbox.content || ""),
-        category: String(inbox.category || ""),
-        source: String(inbox.source || "收件箱入库"),
-        tags: String(inbox.tags || "[]"),
-      },
-    });
-    routedId = item.id;
-  } else if (cfg.tableId) {
-    // Feishu 模块：映射字段到目标表
-    const targetFields: Record<string, unknown> = {};
-    for (const [inboxField, targetField] of Object.entries(cfg.fieldMap)) {
-      const v = inbox[inboxField];
-      if (v !== undefined && v !== null && v !== "") {
-        targetFields[targetField] = v;
-      }
+  // Build target fields from fieldMap
+  const targetFields: Record<string, unknown> = {};
+  for (const [inboxField, targetField] of Object.entries(cfg.fieldMap)) {
+    const v = inbox[inboxField];
+    if (v !== undefined && v !== null && v !== "") {
+      targetFields[targetField] = v;
     }
-    // 补一个默认值确保创建成功
-    if (Object.keys(targetFields).length === 0) {
-      targetFields[Object.values(cfg.fieldMap)[0] || "title"] = String(inbox.title || "未命名");
-    }
-    // tags 统一传 JSON 字符串
-    if (inbox.tags) targetFields["tags"] = String(inbox.tags);
-
-    const feishuFields = await toFeishuFields(cfg.tableId, targetFields);
-    const targetRecord = await createRecord(cfg.tableId, feishuFields);
-    if (!targetRecord) return c.json({ error: "Failed to create target record" }, 500);
-    routedId = targetRecord.record_id;
   }
+  if (Object.keys(targetFields).length === 0) {
+    targetFields["title"] = String(inbox.title || "未命名");
+  }
+  if (inbox.tags) targetFields["tags"] = String(inbox.tags);
 
-  // 更新收件箱状态
-  const updateFields = await toFeishuFields(TABLE, {
+  const targetRecord = await createRecord(cfg.dbTable, targetFields);
+  if (!targetRecord) return c.json({ error: "Failed to create target record" }, 500);
+
+  // Update inbox status
+  const updated = await updateRecord(TABLE, c.req.param("id"), {
     routeTarget: rawTarget,
     status: "已炼化",
-    routedTo: routedId || cfg.label,
+    routedTo: targetRecord.id || cfg.label,
   });
-  const updated = await updateRecord(TABLE, c.req.param("id"), updateFields);
-  if (!updated) return c.json({ error: "Failed to update inbox status" }, 500);
 
   return c.json({
-    inbox: await toEnglish(TABLE, updated),
-    routedId,
+    inbox: updated,
+    routedId: targetRecord.id,
     target: targetKey,
     targetLabel: cfg.label,
   });

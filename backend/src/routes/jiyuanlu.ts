@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { listRecords, getRecord, createRecord, updateRecord, deleteRecord } from "../lib/db.js";
 
-const TABLE = "tasks";
+const TABLE = "jiyuanlu";
 
 const app = new Hono();
 
@@ -13,11 +13,13 @@ app.get("/", async (c) => {
 app.post("/", async (c) => {
   const body = await c.req.json();
   const input: Record<string, unknown> = {};
-  if (body.title) input.title = body.title;
+  if (body.detail) input.detail = body.detail;
   if (body.description) input.description = body.description;
   if (body.status) input.status = body.status;
   if (body.action) input.action = body.action;
   if (body.tags) input.tags = body.tags;
+  if (body.relatedMethod) input.relatedMethod = body.relatedMethod;
+  if (body.actionLog) input.actionLog = body.actionLog;
 
   const record = await createRecord(TABLE, input);
   if (!record) return c.json({ error: "Failed to create" }, 500);
@@ -33,11 +35,13 @@ app.get("/:id", async (c) => {
 app.put("/:id", async (c) => {
   const body = await c.req.json();
   const input: Record<string, unknown> = {};
-  if (body.title !== undefined) input.title = body.title;
+  if (body.detail !== undefined) input.detail = body.detail;
   if (body.description !== undefined) input.description = body.description;
   if (body.status !== undefined) input.status = body.status;
   if (body.action !== undefined) input.action = body.action;
   if (body.tags !== undefined) input.tags = body.tags;
+  if (body.relatedMethod !== undefined) input.relatedMethod = body.relatedMethod;
+  if (body.actionLog !== undefined) input.actionLog = body.actionLog;
 
   const record = await updateRecord(TABLE, c.req.param("id"), input);
   if (!record) return c.json({ error: "Update failed" }, 500);

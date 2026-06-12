@@ -1,15 +1,13 @@
 import { Hono } from "hono";
-import { listRecords, getRecord, createRecord, updateRecord, deleteRecord } from "../lib/feishu.js";
-import { toEnglish, toFeishuFields } from "../lib/field-map.js";
+import { listRecords, getRecord, createRecord, updateRecord, deleteRecord } from "../lib/db.js";
 
-const TABLE = "tbllqXDX0MbmUl07";
+const TABLE = "methods";
 
 const app = new Hono();
 
 app.get("/", async (c) => {
   const records = await listRecords(TABLE);
-  const mapped = await Promise.all(records.map((r) => toEnglish(TABLE, r)));
-  return c.json(mapped);
+  return c.json(records);
 });
 
 app.post("/", async (c) => {
@@ -22,17 +20,17 @@ app.post("/", async (c) => {
   if (body.learnedDate) input.learnedDate = body.learnedDate;
   if (body.storage) input.storage = body.storage;
   if (body.related) input.related = body.related;
+  if (body.tags) input.tags = body.tags;
 
-  const fields = await toFeishuFields(TABLE, input);
-  const record = await createRecord(TABLE, fields);
+  const record = await createRecord(TABLE, input);
   if (!record) return c.json({ error: "Failed to create" }, 500);
-  return c.json(await toEnglish(TABLE, record), 201);
+  return c.json(record, 201);
 });
 
 app.get("/:id", async (c) => {
   const record = await getRecord(TABLE, c.req.param("id"));
   if (!record) return c.json({ error: "Not found" }, 404);
-  return c.json(await toEnglish(TABLE, record));
+  return c.json(record);
 });
 
 app.put("/:id", async (c) => {
@@ -45,11 +43,11 @@ app.put("/:id", async (c) => {
   if (body.learnedDate !== undefined) input.learnedDate = body.learnedDate;
   if (body.storage !== undefined) input.storage = body.storage;
   if (body.related !== undefined) input.related = body.related;
+  if (body.tags !== undefined) input.tags = body.tags;
 
-  const fields = await toFeishuFields(TABLE, input);
-  const record = await updateRecord(TABLE, c.req.param("id"), fields);
+  const record = await updateRecord(TABLE, c.req.param("id"), input);
   if (!record) return c.json({ error: "Update failed" }, 500);
-  return c.json(await toEnglish(TABLE, record));
+  return c.json(record);
 });
 
 app.delete("/:id", async (c) => {
