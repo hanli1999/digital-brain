@@ -23,38 +23,26 @@ app.get("/activity", async (c) => {
       const records = await (prisma as any)[model].findMany({
         orderBy: { createdAt: "desc" },
         take: limit,
-        select: {
-          id: true,
-          createdAt: true,
-          updatedAt: true,
-          status: true,
-          title: true,
-          name: true,
-          routeTarget: true,
-          routedTo: true,
-        },
       });
 
       return records.map((r: any) => {
         const title = r.title || r.name || "(无标题)";
-        const isRouted = r.status === "routed" || r.routedTo;
+        const routedTo = r.routedTo || r.routeTarget || "";
+        const isRouted = r.status === "routed" || (typeof routedTo === "string" && routedTo.length > 0);
         const isPending = r.status === "pending";
-        const wasUpdated = r.updatedAt && r.createdAt && new Date(r.updatedAt).getTime() - new Date(r.createdAt).getTime() > 1000;
+        const createdAtStr = typeof r.createdAt === "string" ? r.createdAt : r.createdAt?.toISOString?.() || "";
 
         let action: string;
         let description: string;
 
         if (isRouted) {
           action = "已入库";
-          description = `「${title}」已入库到${r.routedTo || r.routeTarget || "目标模块"}`;
+          description = `「${title}」已入库到${routedTo || "目标模块"}`;
         } else if (isPending && key === "inbox") {
           action = "待炼化";
           description = `「${title}」等待炼化入库`;
-        } else if (wasUpdated && key === "tasks") {
-          action = "已更新";
-          description = `「${title}」任务状态更新`;
         } else {
-          action = "新收录";
+          action = "收录";
           description = `「${title}」收录到${label}`;
         }
 
@@ -65,7 +53,7 @@ app.get("/activity", async (c) => {
           title: title.length > 60 ? title.slice(0, 60) + "..." : title,
           action,
           description,
-          createdAt: r.createdAt?.toISOString() || "",
+          createdAt: createdAtStr,
         };
       });
     } catch {
