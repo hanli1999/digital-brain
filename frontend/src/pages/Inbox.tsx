@@ -85,7 +85,10 @@ export default function InboxPage() {
       });
       const data = await res.json();
       if (data.error) { toast.error(data.error); return; }
-      setParsed(data);
+      const items = data.parsed || (data.title ? [data] : []);
+      if (items.length === 0) { toast.error("AI 未能识别有效内容"); return; }
+      setParsed(items[0]);
+      if (items.length > 1) toast.info(`AI 识别到 ${items.length} 个独立条目，当前仅展示第一条`);
     } catch {
       toast.error("AI 解析失败，请重试");
     } finally {
