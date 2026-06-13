@@ -20,6 +20,7 @@ import AiEngine from "@/pages/AiEngine";
 import Insight from "@/pages/Insight";
 import Search from "@/pages/Search";
 import Settings from "@/pages/Settings";
+import Guide from "@/pages/Guide";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 
@@ -65,6 +66,7 @@ export default function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/guide" element={<Guide />} />
             <Route path="*" element={<AppLayout />} />
           </Routes>
         </QueryProvider>
