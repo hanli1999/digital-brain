@@ -57,8 +57,11 @@ export function RouteButton({ inboxId, title = "", content = "", aiTarget }: { i
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ routeTarget: target }),
-      }).then((r) => {
-        if (!r.ok) throw new Error("入库失败");
+      }).then(async (r) => {
+        if (!r.ok) {
+          const body = await r.json().catch(() => ({}));
+          throw new Error(body.error || `入库失败 (${r.status})`);
+        }
         return r.json();
       }),
     onSuccess: (data: { target: string; targetLabel: string }) => {

@@ -112,12 +112,20 @@ export default function InboxPage() {
           source: "manual",
         }),
       });
+      if (!inboxR.ok) {
+        const body = await inboxR.json().catch(() => ({}));
+        throw new Error(body.error || `创建失败 (${inboxR.status})`);
+      }
       const inboxItem = await inboxR.json() as { id: string };
       // 2. 路由到目标模块
       const routeR = await apiFetch(`/inbox/${inboxItem.id}/route`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ routeTarget: target }),
       });
+      if (!routeR.ok) {
+        const body = await routeR.json().catch(() => ({}));
+        throw new Error(body.error || `入库失败 (${routeR.status})`);
+      }
       return routeR.json() as Promise<{ targetLabel: string }>;
     },
     onSuccess: (data: { targetLabel: string }) => {
