@@ -5,15 +5,15 @@ import { toast } from "sonner";
 import { apiFetch } from "@/config/api";
 
 const targets = [
-  { key: "tools", label: "🔧 入库到工具资源库", keywords: ["工具", "软件", "网站", "tool", "平台", "APP"] },
-  { key: "tasks", label: "📋 入库到机缘录", keywords: ["任务", "做", "完成", "todo", "待办", "处理", "灵感", "想法"] },
-  { key: "methods", label: "📐 入库到方法流程库", keywords: ["方法", "流程", "步骤", "workflow", "方案", "策略"] },
-  { key: "library", label: "📚 入库到文献库", keywords: ["论文", "文章", "文献", "paper", "阅读", "研究"] },
-  { key: "ai-engine", label: "🤖 入库到 AI Agent 库", keywords: ["AI", "agent", "智能体", "prompt", "提示词", "模型", "GPT", "LLM"] },
-  { key: "resources", label: "📊 入库到资源管理", keywords: ["数据", "指标", "统计", "metric", "资源", "预算"] },
-  { key: "calendar", label: "📅 入库到日程", keywords: ["时间", "日期", "预约", "会议", "日程", "安排"] },
-  { key: "files", label: "📁 入库到文件管理", keywords: ["文件", "文档", "图片", "附件", "下载"] },
-  { key: "insight", label: "💡 入库到洞察", keywords: ["灵感", "想法", "洞察", "感悟", "观察", "反思", "insight", "笔记", "随记", "领悟"] },
+  { key: "tools", label: "🔧 工具资源库", keywords: ["工具", "软件", "网站", "tool", "平台", "APP"] },
+  { key: "tasks", label: "📋 机缘录", keywords: ["任务", "做", "完成", "todo", "待办", "处理", "灵感", "想法"] },
+  { key: "methods", label: "📐 方法流程库", keywords: ["方法", "流程", "步骤", "workflow", "方案", "策略"] },
+  { key: "library", label: "📚 文献库", keywords: ["论文", "文章", "文献", "paper", "阅读", "研究"] },
+  { key: "ai-engine", label: "🤖 AI Agent 库", keywords: ["AI", "agent", "智能体", "prompt", "提示词", "模型", "GPT", "LLM"] },
+  { key: "resources", label: "📊 资源管理", keywords: ["数据", "指标", "统计", "metric", "资源", "预算"] },
+  { key: "calendar", label: "📅 日程", keywords: ["时间", "日期", "预约", "会议", "日程", "安排"] },
+  { key: "files", label: "📁 文件管理", keywords: ["文件", "文档", "图片", "附件", "下载"] },
+  { key: "insight", label: "💡 洞察", keywords: ["灵感", "想法", "洞察", "感悟", "观察", "反思", "insight", "笔记", "随记", "领悟"] },
 ];
 
 // AI parse-card 中文名 → 前端 target key (must match backend ROUTE_TARGETS keys)
