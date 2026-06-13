@@ -1,10 +1,26 @@
 import { Hono } from "hono";
 import { listRecords, getRecord, createRecord, updateRecord, deleteRecord } from "../lib/db.js";
 import { ROUTE_TARGETS, resolveTarget } from "../lib/route-targets.js";
+import { parseTextWithDeepSeek } from "../lib/parse-prompt.js";
 
 const TABLE = "inbox";
 
 const app = new Hono();
+
+async function autoParseInboxItem(id: string, title: string, content: string) {
+  const text = [title, content].filter(Boolean).join("\n");
+  if (!text.trim()) return;
+
+  const card = await parseTextWithDeepSeek(text);
+  if (!card) return;
+
+  await updateRecord(TABLE, id, {
+    aiSummary: card.abstract || "",
+    routeTarget: card.routeTarget || null,
+    tags: JSON.stringify(card.tags || []),
+    mood: card.mood || "",
+  });
+}
 
 app.get("/", async (c) => {
   const records = await listRecords(TABLE);
@@ -29,6 +45,12 @@ app.post("/", async (c) => {
 
   const record = await createRecord(TABLE, input);
   if (!record) return c.json({ error: "Failed to create" }, 500);
+
+  // Fire-and-forget AI auto-parse (like Feishu's auto-computed fields)
+  if (!input.aiSummary && (input.title || input.content)) {
+    void autoParseInboxItem(record.id, String(input.title || ""), String(input.content || ""));
+  }
+
   return c.json(record, 201);
 });
 

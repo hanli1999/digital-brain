@@ -75,6 +75,47 @@ export default function InboxPage() {
     onError: () => toast.error("删除失败"),
   });
 
+  // 对已存在的收件箱条目执行 AI 解析
+  const parseItemMutation = useMutation({
+    mutationFn: async (item: InboxItem) => {
+      const text = [item.title, item.content].filter(Boolean).join("\n") || item.title;
+      const res = await apiFetch("/ai/parse-card", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `AI 解析失败 (${res.status})`);
+      }
+      const data = await res.json() as { parsed?: ParsedCard[]; title?: string };
+      const cards: ParsedCard[] = data.parsed || (data.title ? [data as unknown as ParsedCard] : []);
+      if (cards.length === 0) throw new Error("AI 未能识别有效内容");
+      const card = cards[0];
+      // 更新收件箱条目
+      const putR = await apiFetch(`/inbox/${item.id}`, {
+        method: "PUT", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          aiSummary: (card.abstract || "") + (card.suggestion ? `\n\n建议：${card.suggestion}` : ""),
+          routeTarget: card.routeTarget,
+          tags: JSON.stringify(card.tags),
+          mood: card.mood,
+        }),
+      });
+      if (!putR.ok) {
+        const body = await putR.json().catch(() => ({}));
+        throw new Error(body.error || `更新失败 (${putR.status})`);
+      }
+      return putR.json();
+    },
+    onSuccess: (_data, item) => {
+      queryClient.invalidateQueries({ queryKey: ["inbox"] });
+      toast.success(`"${item.title.slice(0, 20)}" 解析完成`);
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "AI 解析失败");
+    },
+  });
+
   const handleParse = async () => {
     if (!nlInput.trim()) return;
     setParsing(true);
@@ -289,8 +330,17 @@ export default function InboxPage() {
                   <span>{safeDate(item.createdAt)}</span>
                 </div>
                 {item.status === "pending" && (
-                  <div onClick={(e) => e.stopPropagation()}>
+                  <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-1.5">
                     <RouteButton inboxId={item.id} title={item.title} content={item.content} aiTarget={item.routeTarget} />
+                    <Button
+                      size="sm" variant="ghost"
+                      className="h-7 w-7 p-0 text-muted-foreground hover:text-primary"
+                      disabled={parseItemMutation.isPending}
+                      onClick={() => parseItemMutation.mutate(item)}
+                      title="AI 解析"
+                    >
+                      <Magic1Line className="h-3.5 w-3.5" />
+                    </Button>
                   </div>
                 )}
               </CardContent>
