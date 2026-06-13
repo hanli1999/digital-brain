@@ -50,7 +50,8 @@ export function DataTable<T extends { id: string }>({
   ] : columns;
 
   return (
-    <div className="w-full overflow-auto rounded-md border">
+    <div className="w-full rounded-md border">
+      <div className="w-full overflow-x-auto">
     <Table>
       <TableHeader>
         <TableRow>
@@ -69,6 +70,7 @@ export function DataTable<T extends { id: string }>({
         ))}
       </TableBody>
     </Table>
+      </div>
     </div>
   );
 }

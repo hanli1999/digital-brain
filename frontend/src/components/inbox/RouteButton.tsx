@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { apiFetch } from "@/config/api";
 
-const targets = [
+export const ROUTE_TARGETS = [
   { key: "tools", label: "🔧 工具资源库", keywords: ["工具", "软件", "网站", "tool", "平台", "APP"] },
   { key: "tasks", label: "📋 机缘录", keywords: ["任务", "做", "完成", "todo", "待办", "处理", "灵感", "想法"] },
   { key: "methods", label: "📐 方法流程库", keywords: ["方法", "流程", "步骤", "workflow", "方案", "策略"] },
@@ -17,7 +17,7 @@ const targets = [
 ];
 
 // AI parse-card 中文名 → 前端 target key (must match backend ROUTE_TARGETS keys)
-const AI_TO_KEY: Record<string, string> = {
+export const AI_TO_KEY: Record<string, string> = {
   "收件箱": "inbox", "任务管理": "tasks",
   "机缘录": "tasks", "法器阁": "tools",
   "工具资源库": "tools", "功法库": "methods",
@@ -34,7 +34,7 @@ function suggestTarget(title: string, content: string): string | null {
   const text = `${title} ${content}`.toLowerCase();
   let bestScore = 0;
   let bestTarget: string | null = null;
-  for (const t of targets) {
+  for (const t of ROUTE_TARGETS) {
     let score = 0;
     for (const kw of t.keywords) {
       if (text.includes(kw)) score += kw.length;
@@ -72,7 +72,7 @@ export function RouteButton({ inboxId, title = "", content = "", aiTarget }: { i
     },
   });
 
-  const suggestedLabel = targets.find((t) => t.key === suggested)?.label || "";
+  const suggestedLabel = ROUTE_TARGETS.find((t) => t.key === suggested)?.label || "";
   const suggestedName = suggestedLabel.split(" ").slice(1).join(" ") || suggestedLabel;
 
   return (
@@ -86,12 +86,12 @@ export function RouteButton({ inboxId, title = "", content = "", aiTarget }: { i
         {suggested && (
           <>
             <DropdownMenuItem onClick={() => mutation.mutate(suggested)} className="font-medium text-primary">
-              {targets.find((t) => t.key === suggested)?.label} <span className="ml-1 text-xs text-muted-foreground">（{aiKey ? "AI推荐" : "推荐"}）</span>
+              {ROUTE_TARGETS.find((t) => t.key === suggested)?.label} <span className="ml-1 text-xs text-muted-foreground">（{aiKey ? "AI推荐" : "推荐"}）</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>
         )}
-        {targets.filter((t) => t.key !== suggested).map((t) => (
+        {ROUTE_TARGETS.filter((t) => t.key !== suggested).map((t) => (
           <DropdownMenuItem key={t.key} onClick={() => mutation.mutate(t.key)}>
             {t.label}
           </DropdownMenuItem>
