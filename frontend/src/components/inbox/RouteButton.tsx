@@ -6,7 +6,7 @@ import { apiFetch } from "@/config/api";
 
 export const ROUTE_TARGETS = [
   { key: "tools", label: "🔧 工具资源库", keywords: ["工具", "软件", "网站", "tool", "平台", "APP"] },
-  { key: "tasks", label: "📋 机缘录", keywords: ["任务", "做", "完成", "todo", "待办", "处理", "灵感", "想法"] },
+  { key: "jiyuanlu", label: "📋 机缘录", keywords: ["任务", "做", "完成", "todo", "待办", "处理", "灵感", "想法"] },
   { key: "methods", label: "📐 方法流程库", keywords: ["方法", "流程", "步骤", "workflow", "方案", "策略"] },
   { key: "library", label: "📚 文献库", keywords: ["论文", "文章", "文献", "paper", "阅读", "研究"] },
   { key: "ai-engine", label: "🤖 AI Agent 库", keywords: ["AI", "agent", "智能体", "prompt", "提示词", "模型", "GPT", "LLM"] },
@@ -18,8 +18,8 @@ export const ROUTE_TARGETS = [
 
 // AI parse-card 中文名 → 前端 target key (must match backend ROUTE_TARGETS keys)
 export const AI_TO_KEY: Record<string, string> = {
-  "收件箱": "inbox", "任务管理": "tasks",
-  "机缘录": "tasks", "法器阁": "tools",
+  "收件箱": "inbox", "任务管理": "jiyuanlu",
+  "机缘录": "jiyuanlu", "法器阁": "tools",
   "工具资源库": "tools", "功法库": "methods",
   "方法流程库": "methods", "方法库": "methods",
   "文献库": "library", "丹房": "library",
