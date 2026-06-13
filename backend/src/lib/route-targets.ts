@@ -40,7 +40,7 @@ export const ROUTE_TARGETS: Record<string, RouteTarget> = {
   tools: {
     dbTable: "tools",
     label: "工具资源库",
-    fieldMap: { content: "record", category: "category" },
+    fieldMap: { title: "name", content: "record", category: "category" },
   },
   methods: {
     dbTable: "methods",
@@ -60,12 +60,12 @@ export const ROUTE_TARGETS: Record<string, RouteTarget> = {
   "ai-engine": {
     dbTable: "ai-engine",
     label: "AI Agent库",
-    fieldMap: { content: "rawContent", category: "component" },
+    fieldMap: { title: "name", content: "rawContent", category: "component" },
   },
   files: {
     dbTable: "files",
     label: "文件管理",
-    fieldMap: { content: "text" },
+    fieldMap: { title: "filename", content: "text" },
   },
   calendar: {
     dbTable: "calendar",
