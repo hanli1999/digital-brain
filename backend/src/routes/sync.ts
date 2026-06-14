@@ -100,6 +100,36 @@ app.post("/export/:table", async (c) => {
   return c.json({ table, synced, errors, total: records.length });
 });
 
+// GET /api/sync/fields-meta/:table — raw Feishu field metadata (types, formulas, etc.)
+app.get("/fields-meta/:table", async (c) => {
+  if (!isFeishuConfigured()) return c.json({ error: "Feishu not configured" }, 400);
+  const table = c.req.param("table");
+  const cfg = tables[table];
+  if (!cfg) return c.json({ error: `Unknown table: ${table}` }, 400);
+
+  const { feishuRequest } = await import("../lib/feishu.js");
+  const APP_TOKEN = "MDmcwLhJIiwpK5k5yuecRWu4nee";
+  const data = await feishuRequest("GET",
+    `/bitable/v1/apps/${APP_TOKEN}/tables/${cfg.tableId}/fields?page_size=100`
+  );
+  if (data.code !== 0) return c.json({ error: data.msg || "Feishu error", code: data.code });
+
+  const items = data.data?.items ?? [];
+  return c.json({
+    table,
+    tableName: cfg.tableName,
+    tableId: cfg.tableId,
+    fieldCount: items.length,
+    fields: items.map((f: any) => ({
+      fieldName: f.field_name,
+      type: f.type,
+      property: f.property || null,
+      description: f.description || null,
+      isPrimary: f.is_primary || false,
+    })),
+  });
+});
+
 // GET /api/sync/fields/:table — debug: show raw Feishu field names for first record
 app.get("/fields/:table", async (c) => {
   if (!isFeishuConfigured()) return c.json({ error: "Feishu not configured" }, 400);
