@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { KawaiiDecor } from "@/components/shared/KawaiiDecor";
 import { apiFetch } from "@/config/api";
 import { safeDate } from "@/lib/utils";
 import type { InboxItem, Task } from "@/types/api";
@@ -90,11 +91,11 @@ export default function Dashboard() {
     <div>
       {/* 银月 Greeting */}
       <Card className="mb-5 border-primary/20 bg-linear-to-r from-primary/5 via-background to-background overflow-hidden relative">
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-4xl opacity-30 pointer-events-none select-none">🐺</div>
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-25 pointer-events-none select-none">
+          <KawaiiDecor module="default" size={100} mood="blissful" />
+        </div>
         <CardContent className="p-4 flex items-center gap-4 relative z-10">
-          <div className="w-10 h-10 rounded-full bg-linear-to-br from-primary/20 to-primary/10 flex items-center justify-center text-lg shrink-0 ring-1 ring-primary/20">
-            🧝
-          </div>
+          <KawaiiDecor module="default" size={48} mood="blissful" />
           <div>
             <p className="text-sm font-medium">{yinyueGreeting()}</p>
             <p className="text-xs text-muted-foreground mt-0.5">
