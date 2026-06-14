@@ -1,4 +1,5 @@
 import { prisma } from "./prisma.js";
+import { Prisma } from "@prisma/client";
 
 type ModelName = "tool" | "inboxItem" | "task" | "method" | "document" | "aiMechanism" | "resource" | "fileAsset" | "calendarEvent" | "jiyuanlu";
 
@@ -45,12 +46,26 @@ export async function createRecord(table: string, fields: Record<string, any>): 
 
 export async function updateRecord(table: string, id: string, fields: Record<string, any>): Promise<{ id: string; [key: string]: any } | null> {
   const m = model(table);
-  const row = await m.update({ where: { id }, data: fields });
-  return { id: row.id, ...row };
+  try {
+    const row = await m.update({ where: { id }, data: fields });
+    return { id: row.id, ...row };
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2025") {
+      return null; // not found or not owned by current user
+    }
+    throw e;
+  }
 }
 
 export async function deleteRecord(table: string, id: string): Promise<boolean> {
   const m = model(table);
-  await m.delete({ where: { id } });
-  return true;
+  try {
+    await m.delete({ where: { id } });
+    return true;
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2025") {
+      return false; // not found or not owned by current user
+    }
+    throw e;
+  }
 }
