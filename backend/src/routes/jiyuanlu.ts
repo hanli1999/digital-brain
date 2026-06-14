@@ -44,13 +44,13 @@ app.put("/:id", async (c) => {
   if (body.actionLog !== undefined) input.actionLog = body.actionLog;
 
   const record = await updateRecord(TABLE, c.req.param("id"), input);
-  if (!record) return c.json({ error: "Update failed" }, 500);
+  if (!record) return c.json({ error: "Not found" }, 404);
   return c.json(record);
 });
 
 app.delete("/:id", async (c) => {
   const ok = await deleteRecord(TABLE, c.req.param("id"));
-  if (!ok) return c.json({ error: "Delete failed" }, 500);
+  if (!ok) return c.json({ error: "Not found" }, 404);
   return c.json({ ok: true });
 });
 

@@ -108,7 +108,7 @@ app.put("/:id", async (c) => {
   if (body.imageUrls !== undefined) input.imageUrls = body.imageUrls;
 
   const record = await updateRecord(TABLE, c.req.param("id"), input);
-  if (!record) return c.json({ error: "Update failed" }, 500);
+  if (!record) return c.json({ error: "Not found" }, 404);
   return c.json(record);
 });
 
