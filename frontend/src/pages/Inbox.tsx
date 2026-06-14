@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { DataTable } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -12,9 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { apiFetch } from "@/config/api";
+import { apiFetch, API_BASE_URL } from "@/config/api";
 import type { InboxItem } from "@/types/api";
-import { Magic1Line, Loading3Line, LayoutGridLine, ListCheckLine } from "@mingcute/react";
+import { Magic1Line, Loading3Line, LayoutGridLine, ListCheckLine, UploadLine, CloseLine } from "@mingcute/react";
 import { stripMarkdown, safeDate } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -45,6 +45,9 @@ export default function InboxPage() {
   const [parsing, setParsing] = useState(false);
   const [parsed, setParsed] = useState<ParsedCard | null>(null);
   const [viewMode, setViewMode] = useState<"table" | "card">("table");
+  const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: items = [], isLoading } = useQuery<InboxItem[]>({
     queryKey: ["inbox"],
@@ -52,7 +55,7 @@ export default function InboxPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: { title: string; content: string; tags: string; status?: string; routeTarget?: string }) =>
+    mutationFn: (data: { title: string; content: string; tags: string; status?: string; routeTarget?: string; imageUrls?: string }) =>
       apiFetch(`/inbox`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...data, source: "manual" }),
@@ -60,7 +63,7 @@ export default function InboxPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inbox"] });
       setShowNewItem(false); setNewTitle(""); setNewContent(""); setNewTags("");
-      setNlInput(""); setParsed(null);
+      setNlInput(""); setParsed(null); setUploadedUrls([]);
       toast.success("已添加到收件箱");
     },
   });
@@ -116,6 +119,27 @@ export default function InboxPage() {
     },
   });
 
+  const handleFileUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    const urls: string[] = [];
+    for (const file of Array.from(files)) {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await apiFetch("/inbox/upload", { method: "POST", body: fd });
+      if (!res.ok) { toast.error(`${file.name} 上传失败`); continue; }
+      const data = await res.json() as { url: string };
+      urls.push(`${API_BASE_URL.replace("/api", "")}${data.url}`);
+    }
+    setUploadedUrls((prev) => [...prev, ...urls]);
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removeUploadedUrl = (url: string) => {
+    setUploadedUrls((prev) => prev.filter((u) => u !== url));
+  };
+
   const handleParse = async () => {
     if (!nlInput.trim()) return;
     setParsing(true);
@@ -151,6 +175,7 @@ export default function InboxPage() {
           status: "pending",
           routeTarget: target,
           source: "manual",
+          imageUrls: JSON.stringify(uploadedUrls),
         }),
       });
       if (!inboxR.ok) {
@@ -172,7 +197,7 @@ export default function InboxPage() {
     onSuccess: (data: { targetLabel: string }) => {
       queryClient.invalidateQueries({ queryKey: ["inbox"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-      setNlInput(""); setParsed(null);
+      setNlInput(""); setParsed(null); setUploadedUrls([]);
       toast.success(`已入库到${data.targetLabel || "目标模块"}`);
     },
     onError: (err: Error) => {
@@ -210,6 +235,46 @@ export default function InboxPage() {
             {parsing ? <Loading3Line className="h-4 w-4 animate-spin" /> : <Magic1Line className="h-4 w-4" />}
             <span className="ml-1">{parsing ? "解析中..." : "AI 解析"}</span>
           </Button>
+        </div>
+
+        {/* 附件上传区 */}
+        <div className="mt-2 space-y-2">
+          <div className="flex items-center gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*,.pdf,.doc,.docx,.txt,.md"
+              className="hidden"
+              onChange={(e) => handleFileUpload(e.target.files)}
+            />
+            <Button size="sm" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="gap-1">
+              <UploadLine className="h-3.5 w-3.5" />
+              {uploading ? "上传中..." : "添加附件"}
+            </Button>
+          </div>
+          {uploadedUrls.length > 0 && (
+            <div className="flex gap-2 flex-wrap">
+              {uploadedUrls.map((url) => (
+                <div key={url} className="relative group w-16 h-16 rounded-lg border border-border/50 overflow-hidden bg-muted/30">
+                  {url.match(/\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i) ? (
+                    <img src={url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs p-1 text-center leading-tight">
+                      {url.split(".").pop()?.toUpperCase() || "FILE"}
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeUploadedUrl(url)}
+                    className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <CloseLine className="h-2.5 w-2.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {parsed && (
@@ -297,7 +362,42 @@ export default function InboxPage() {
               <Input placeholder="标题" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
               <Textarea placeholder="内容" value={newContent} onChange={(e) => setNewContent(e.target.value)} />
               <Input placeholder="标签（逗号分隔）" value={newTags} onChange={(e) => setNewTags(e.target.value)} />
-              <Button onClick={() => createMutation.mutate({ title: newTitle, content: newContent, tags: JSON.stringify(newTags.split(",").map((t) => t.trim()).filter(Boolean)) })} disabled={createMutation.isPending}>创建</Button>
+              {/* 附件上传 */}
+              <div className="space-y-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept="image/*,.pdf,.doc,.docx,.txt,.md"
+                  className="hidden"
+                  onChange={(e) => handleFileUpload(e.target.files)}
+                />
+                <Button size="sm" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="gap-1">
+                  <UploadLine className="h-3.5 w-3.5" />
+                  {uploading ? "上传中..." : "添加附件"}
+                </Button>
+                {uploadedUrls.length > 0 && (
+                  <div className="flex gap-2 flex-wrap">
+                    {uploadedUrls.map((url) => (
+                      <div key={url} className="relative group w-14 h-14 rounded border border-border/50 overflow-hidden bg-muted/30">
+                        {url.match(/\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i) ? (
+                          <img src={url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-[10px] p-0.5 text-center leading-tight">{url.split(".").pop()?.toUpperCase() || "FILE"}</div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => removeUploadedUrl(url)}
+                          className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
+                        >
+                          <CloseLine className="h-2.5 w-2.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <Button onClick={() => createMutation.mutate({ title: newTitle, content: newContent, tags: JSON.stringify(newTags.split(",").map((t) => t.trim()).filter(Boolean)), imageUrls: JSON.stringify(uploadedUrls) })} disabled={createMutation.isPending}>创建</Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -325,6 +425,7 @@ export default function InboxPage() {
                     <span key={t} className="text-xs bg-muted/80 px-1.5 py-0.5 rounded-full border border-border/30">{t}</span>
                   ))}
                 </div>
+                {(() => { try { const urls = JSON.parse(item.imageUrls) as string[]; if (urls.length > 0) return <div className="flex gap-1.5 flex-wrap">{urls.slice(0, 3).map((u: string) => <div key={u} className="w-10 h-10 rounded border border-border/40 overflow-hidden bg-muted/20"><img src={u} alt="" className="w-full h-full object-cover" /></div>)}{urls.length > 3 && <span className="text-xs text-muted-foreground self-center">+{urls.length - 3}</span>}</div>; } catch { return null; } })()}
                 <div className="flex items-center justify-between text-xs text-muted-foreground/60">
                   <span>{item.source === "manual" ? "手动" : item.source === "feishu-bot" ? "飞书机器人" : "飞书导入"}</span>
                   <span>{safeDate(item.createdAt)}</span>
@@ -381,6 +482,7 @@ export default function InboxPage() {
               {selectedItem.routedTo && <div><span className="block mb-0.5">已入库至</span><span>{selectedItem.routedTo}</span></div>}
               {selectedItem.collectedAt && <div><span className="block mb-0.5">采集时间</span><span>{selectedItem.collectedAt}</span></div>}
             </div>
+            {(() => { try { const urls = JSON.parse(selectedItem.imageUrls) as string[]; if (urls.length > 0) return <div><p className="text-xs text-muted-foreground mb-1">附件 ({urls.length})</p><div className="flex gap-2 flex-wrap">{urls.map((u: string) => <a key={u} href={u} target="_blank" rel="noopener noreferrer" className="w-20 h-20 rounded-lg border border-border/50 overflow-hidden bg-muted/20 hover:border-primary/40 transition-colors"><img src={u} alt="" className="w-full h-full object-cover" /></a>)}</div></div>; } catch { return null; } })()}
             <p className="text-xs text-muted-foreground">创建于 {safeDate(selectedItem.createdAt, "datetime")}</p>
           </div>
         )}

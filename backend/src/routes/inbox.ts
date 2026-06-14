@@ -2,8 +2,13 @@ import { Hono } from "hono";
 import { listRecords, getRecord, createRecord, updateRecord, deleteRecord } from "../lib/db.js";
 import { ROUTE_TARGETS, resolveTarget } from "../lib/route-targets.js";
 import { parseTextWithDeepSeek } from "../lib/parse-prompt.js";
+import { writeFile, mkdir } from "node:fs/promises";
+import { join } from "node:path";
+import crypto from "node:crypto";
 
 const TABLE = "inbox";
+const UPLOADS_DIR = join(process.cwd(), "uploads");
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 const app = new Hono();
 
@@ -21,6 +26,30 @@ async function autoParseInboxItem(id: string, title: string, content: string) {
     mood: card.mood || "",
   });
 }
+
+app.post("/upload", async (c) => {
+  try {
+    const formData = await c.req.formData();
+    const file = formData.get("file");
+    if (!file || !(file instanceof File)) return c.json({ error: "No file provided" }, 400);
+    if (file.size > MAX_FILE_SIZE) return c.json({ error: "File too large (max 10MB)" }, 400);
+
+    await mkdir(UPLOADS_DIR, { recursive: true });
+
+    const ext = file.name.includes(".") ? `.${file.name.split(".").pop()}` : "";
+    const basename = `${Date.now()}-${crypto.randomBytes(6).toString("hex")}${ext}`;
+    const filepath = join(UPLOADS_DIR, basename);
+
+    const buf = Buffer.from(await file.arrayBuffer());
+    await writeFile(filepath, buf);
+
+    const url = `/uploads/${basename}`;
+    return c.json({ url, filename: file.name, size: file.size, mimeType: file.type || "application/octet-stream" }, 201);
+  } catch (err) {
+    console.error("[inbox.upload]", err);
+    return c.json({ error: "Upload failed" }, 500);
+  }
+});
 
 app.get("/", async (c) => {
   const records = await listRecords(TABLE);
@@ -42,6 +71,7 @@ app.post("/", async (c) => {
   if (body.sourceUrl) input.sourceUrl = body.sourceUrl;
   if (body.aiSummary) input.aiSummary = body.aiSummary;
   if (body.collectedAt) input.collectedAt = body.collectedAt;
+  if (body.imageUrls) input.imageUrls = body.imageUrls;
 
   const record = await createRecord(TABLE, input);
   if (!record) return c.json({ error: "Failed to create" }, 500);
@@ -75,6 +105,7 @@ app.put("/:id", async (c) => {
   if (body.sourceUrl !== undefined) input.sourceUrl = body.sourceUrl;
   if (body.aiSummary !== undefined) input.aiSummary = body.aiSummary;
   if (body.collectedAt !== undefined) input.collectedAt = body.collectedAt;
+  if (body.imageUrls !== undefined) input.imageUrls = body.imageUrls;
 
   const record = await updateRecord(TABLE, c.req.param("id"), input);
   if (!record) return c.json({ error: "Update failed" }, 500);
