@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { FilterPanel } from "@/components/shared/FilterPanel";
 import { DetailSheet } from "@/components/shared/DetailSheet";
 import { FieldRow } from "@/components/shared/FieldRow";
+import { RecordPicker } from "@/components/shared/RecordPicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,6 +26,9 @@ export default function MethodsPage() {
   const [type, setType] = useState("");
   const [tags, setTags] = useState("");
   const [related, setRelated] = useState("");
+  const [relatedTools, setRelatedTools] = useState("[]");
+  const [relatedMaterials, setRelatedMaterials] = useState("[]");
+  const [relatedInsights, setRelatedInsights] = useState("[]");
   const [storage, setStorage] = useState("");
 
   const { data: methods = [], isLoading } = useQuery<Method[]>({
@@ -35,7 +39,7 @@ export default function MethodsPage() {
   const createMutation = useMutation({
     mutationFn: (data: Record<string, string>) =>
       apiFetch(`/methods`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["methods"] }); setShowNew(false); setTitle(""); setEssence(""); setType(""); setTags(""); setRelated(""); setStorage(""); toast.success("已添加方法"); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["methods"] }); setShowNew(false); setTitle(""); setEssence(""); setType(""); setTags(""); setRelated(""); setRelatedTools("[]"); setRelatedMaterials("[]"); setRelatedInsights("[]"); setStorage(""); toast.success("已添加方法"); },
   });
 
   const updateMutation = useMutation({
@@ -68,9 +72,12 @@ export default function MethodsPage() {
               <Textarea placeholder="精髓 / 核心内容" className="min-h-[150px]" value={essence} onChange={(e) => setEssence(e.target.value)} />
               <Input placeholder="类型" value={type} onChange={(e) => setType(e.target.value)} />
               <Input placeholder="标签（逗号分隔）" value={tags} onChange={(e) => setTags(e.target.value)} />
+              <RecordPicker label="关联工具" value={relatedTools} onChange={setRelatedTools} modules={["tools"]} />
+              <RecordPicker label="关联材料/文献" value={relatedMaterials} onChange={setRelatedMaterials} modules={["library"]} />
+              <RecordPicker label="关联洞察" value={relatedInsights} onChange={setRelatedInsights} modules={["insight"]} />
               <Input placeholder="相关方法" value={related} onChange={(e) => setRelated(e.target.value)} />
               <Input placeholder="存储位置" value={storage} onChange={(e) => setStorage(e.target.value)} />
-              <Button onClick={() => createMutation.mutate({ title, essence, type, tags: JSON.stringify(tags.split(",").map((t) => t.trim()).filter(Boolean)), related, storage })} disabled={createMutation.isPending || !title}>创建</Button>
+              <Button onClick={() => createMutation.mutate({ title, essence, type, tags: JSON.stringify(tags.split(",").map((t) => t.trim()).filter(Boolean)), related, relatedTools, relatedMaterials, relatedInsights, storage })} disabled={createMutation.isPending || !title}>创建</Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -118,6 +125,9 @@ export default function MethodsPage() {
             </div>
             <div className="border-t border-border/30 pt-4 space-y-3">
               <FieldRow label="标签" value={toStr(selected.tags)} tags />
+              <FieldRow label="关联工具" value={toStr(selected.relatedTools)} tags />
+              <FieldRow label="关联文献" value={toStr(selected.relatedMaterials)} tags />
+              <FieldRow label="关联洞察" value={toStr(selected.relatedInsights)} tags />
               <FieldRow label="相关方法" value={toStr(selected.related)} />
               <FieldRow label="存储位置" value={toStr(selected.storage)} />
               <FieldRow label="学习日期" value={toStr(selected.learnedDate)} />

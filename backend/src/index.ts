@@ -24,6 +24,7 @@ import syncRoutes from "./routes/sync.js";
 import insightRoutes from "./routes/insight.js";
 import dashboardRoutes from "./routes/dashboard.js";
 import jiyuanluRoutes from "./routes/jiyuanlu.js";
+import recordsRoutes from "./routes/records.js";
 import webhookRoutes from "./routes/webhook.js";
 import { startSyncCron } from "./lib/cron-sync.js";
 
@@ -98,6 +99,8 @@ app.use("/api/dashboard/*", authMiddleware, tenantMiddleware);
 app.route("/api/dashboard", dashboardRoutes);
 app.use("/api/jiyuanlu/*", authMiddleware, tenantMiddleware);
 app.route("/api/jiyuanlu", jiyuanluRoutes);
+app.use("/api/records/*", authMiddleware, tenantMiddleware);
+app.route("/api/records", recordsRoutes);
 app.use("/api/webhook/*", authMiddleware, tenantMiddleware);
 app.route("/api/webhook", webhookRoutes);
 

@@ -5,6 +5,7 @@ import { DataTable } from "@/components/shared/DataTable";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DetailSheet } from "@/components/shared/DetailSheet";
 import { FieldRow } from "@/components/shared/FieldRow";
+import { RecordPicker } from "@/components/shared/RecordPicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,6 +28,9 @@ export default function LibraryPage() {
   const [keywords, setKeywords] = useState("");
   const [type, setType] = useState("other");
   const [importance, setImportance] = useState("");
+  const [relatedInsights, setRelatedInsights] = useState("[]");
+  const [relatedMethods, setRelatedMethods] = useState("[]");
+  const [relatedResources, setRelatedResources] = useState("[]");
 
   const { data: docs = [], isLoading } = useQuery<Document[]>({
     queryKey: ["library"],
@@ -36,7 +40,7 @@ export default function LibraryPage() {
   const createMutation = useMutation({
     mutationFn: (data: Record<string, string>) =>
       apiFetch(`/library`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["library"] }); setShowNew(false); setTitle(""); setAuthor(""); setUrl(""); setAbstract(""); setKeywords(""); setType("other"); setImportance(""); toast.success("已添加文献"); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["library"] }); setShowNew(false); setTitle(""); setAuthor(""); setUrl(""); setAbstract(""); setKeywords(""); setType("other"); setImportance(""); setRelatedInsights("[]"); setRelatedMethods("[]"); setRelatedResources("[]"); toast.success("已添加文献"); },
   });
 
   const updateMutation = useMutation({
@@ -72,7 +76,10 @@ export default function LibraryPage() {
                 <option value="other">其他</option><option value="paper">论文</option><option value="book">书籍</option><option value="article">文章</option><option value="doc">文档</option>
               </select>
               <Input placeholder="重要程度" value={importance} onChange={(e) => setImportance(e.target.value)} />
-              <Button onClick={() => createMutation.mutate({ title, author, url, abstract, keywords: JSON.stringify(keywords.split(",").map((k) => k.trim()).filter(Boolean)), type, importance })} disabled={createMutation.isPending || !title}>添加</Button>
+              <RecordPicker label="关联洞察" value={relatedInsights} onChange={setRelatedInsights} modules={["insight"]} />
+              <RecordPicker label="关联方法" value={relatedMethods} onChange={setRelatedMethods} modules={["methods"]} />
+              <RecordPicker label="关联资源" value={relatedResources} onChange={setRelatedResources} modules={["resources"]} />
+              <Button onClick={() => createMutation.mutate({ title, author, url, abstract, keywords: JSON.stringify(keywords.split(",").map((k) => k.trim()).filter(Boolean)), type, importance, relatedInsights, relatedMethods, relatedResources })} disabled={createMutation.isPending || !title}>添加</Button>
             </div>
           </DialogContent>
         </Dialog>
