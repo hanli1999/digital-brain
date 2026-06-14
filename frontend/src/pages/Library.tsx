@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { DataTable } from "@/components/shared/DataTable";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DetailSheet } from "@/components/shared/DetailSheet";
+import { FieldRow } from "@/components/shared/FieldRow";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -109,18 +110,24 @@ export default function LibraryPage() {
         onDelete={() => { if (selected) deleteMutation.mutate(selected.id); }}
       >
         {selected && (
-          <div className="space-y-3 text-sm">
-            <div><p className="text-xs text-muted-foreground mb-0.5">标题</p><p className="text-sm font-medium">{toStr(selected.title)}</p></div>
-            {toStr(selected.author) && <div><p className="text-xs text-muted-foreground mb-0.5">作者</p><p className="text-xs">{toStr(selected.author)}</p></div>}
-            {toStr(selected.url) && <div><p className="text-xs text-muted-foreground mb-0.5">链接</p><a href={toStr(selected.url)} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all text-xs">{toStr(selected.url)}</a></div>}
-            {toStr(selected.type) && <div><p className="text-xs text-muted-foreground mb-0.5">类型</p><Badge variant="secondary" className="text-xs">{typeLabels[toStr(selected.type)] || toStr(selected.type)}</Badge></div>}
-            {toStr(selected.importance) && <div><p className="text-xs text-muted-foreground mb-0.5">重要度</p><p className="text-xs">{toStr(selected.importance)}</p></div>}
-            {toStr(selected.status) && <div><p className="text-xs text-muted-foreground mb-0.5">状态</p><p className="text-xs">{toStr(selected.status)}</p></div>}
-            {toStr(selected.keywords) && <div><p className="text-xs text-muted-foreground mb-0.5">关键词</p><p className="text-xs">{toStr(selected.keywords)}</p></div>}
-            {toStr(selected.abstract) && <div><p className="text-xs text-muted-foreground mb-0.5">摘要</p><p className="text-xs whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto">{toStr(selected.abstract)}</p></div>}
-            {toStr(selected.snippet) && <div><p className="text-xs text-muted-foreground mb-0.5">片段</p><p className="text-xs whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto">{toStr(selected.snippet)}</p></div>}
-            {selected.publishedAt && <div><p className="text-xs text-muted-foreground mb-0.5">发布日期</p><p className="text-xs">{toStr(selected.publishedAt)}</p></div>}
-            <div><p className="text-xs text-muted-foreground mb-0.5">添加时间</p><p className="text-xs">{safeDate(selected.createdAt, "datetime")}</p></div>
+          <div className="space-y-5">
+            <div className="space-y-3">
+              <FieldRow label="标题" value={toStr(selected.title)} />
+              <FieldRow label="作者" value={toStr(selected.author)} />
+              <FieldRow label="链接" value={toStr(selected.url)} link />
+              <FieldRow label="类型" value={typeLabels[toStr(selected.type)] || toStr(selected.type)} badge />
+            </div>
+            <div className="border-t border-border/30 pt-4 space-y-3">
+              <FieldRow label="摘要" value={toStr(selected.abstract)} block />
+              <FieldRow label="片段" value={toStr(selected.snippet)} block />
+              <FieldRow label="关键词" value={toStr(selected.keywords)} tags />
+            </div>
+            <div className="border-t border-border/30 pt-4 space-y-3">
+              <FieldRow label="重要度" value={toStr(selected.importance)} />
+              <FieldRow label="状态" value={toStr(selected.status)} />
+              <FieldRow label="发布日期" value={toStr(selected.publishedAt)} />
+              <FieldRow label="添加时间" value={selected.createdAt} date />
+            </div>
           </div>
         )}
       </DetailSheet>

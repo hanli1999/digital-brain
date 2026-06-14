@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { DataTable } from "@/components/shared/DataTable";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DetailSheet } from "@/components/shared/DetailSheet";
+import { FieldRow } from "@/components/shared/FieldRow";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -115,32 +116,24 @@ export default function ToolsPage() {
         onDelete={() => { if (selected) deleteMutation.mutate(selected.id); }}
       >
         {selected && (
-          <div className="space-y-3 text-sm">
-            <FieldRow label="名称" value={toStr(selected.name)} />
-            <FieldRow label="链接" value={toStr(selected.url)} link />
-            <FieldRow label="分类" value={toStr(selected.category)} badge />
-            <FieldRow label="核心能力" value={toStr(selected.corePower)} block />
-            <FieldRow label="初始化脚本" value={toStr(selected.initScript)} block />
-            <FieldRow label="评分" value={toStr(selected.rating)} />
-            <FieldRow label="使用记录" value={toStr(selected.record)} block />
-            <FieldRow label="创建时间" value={selected.createdAt} date />
+          <div className="space-y-5">
+            <div className="space-y-3">
+              <FieldRow label="名称" value={toStr(selected.name)} />
+              <FieldRow label="链接" value={toStr(selected.url)} link />
+              <FieldRow label="分类" value={toStr(selected.category)} badge badgeClass={categoryColors[toStr(selected.category) || "other"]} />
+            </div>
+            <div className="border-t border-border/30 pt-4 space-y-3">
+              <FieldRow label="核心能力" value={toStr(selected.corePower)} block />
+              <FieldRow label="初始化脚本" value={toStr(selected.initScript)} block />
+              <FieldRow label="使用记录" value={toStr(selected.record)} block />
+            </div>
+            <div className="border-t border-border/30 pt-4 space-y-3">
+              <FieldRow label="评分" value={toStr(selected.rating)} />
+              <FieldRow label="创建时间" value={selected.createdAt} date />
+            </div>
           </div>
         )}
       </DetailSheet>
-    </div>
-  );
-}
-
-function FieldRow({ label, value, link, badge, block, date }: { label: string; value?: string; link?: boolean; badge?: boolean; block?: boolean; date?: boolean }) {
-  if (!value) return null;
-  return (
-    <div>
-      <p className="text-xs text-muted-foreground mb-0.5">{label}</p>
-      {link ? <a href={value} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all text-xs">{value}</a>
-       : badge ? <Badge variant="secondary" className="text-xs">{value}</Badge>
-       : date ? <p className="text-xs">{safeDate(value, "datetime")}</p>
-       : block ? <p className="text-xs whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto">{value}</p>
-       : <p className="text-xs">{value}</p>}
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { FilterPanel } from "@/components/shared/FilterPanel";
 import { DetailSheet } from "@/components/shared/DetailSheet";
+import { FieldRow } from "@/components/shared/FieldRow";
 import { RouteButton, ROUTE_TARGETS, AI_TO_KEY } from "@/components/inbox/RouteButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -468,22 +469,28 @@ export default function InboxPage() {
 
       <DetailSheet open={!!selectedItem} onOpenChange={() => setSelectedId(null)} title={selectedItem?.title || "详情"}>
         {selectedItem && (
-          <div className="space-y-3 text-sm">
+          <div className="space-y-5">
             <div className="flex items-center gap-2">
               <StatusBadge status={selectedItem.status} />
               {selectedItem.mood && <span className="text-xs text-muted-foreground">心情：{selectedItem.mood}</span>}
             </div>
-            <p className="whitespace-pre-wrap text-muted-foreground text-xs leading-relaxed">{selectedItem.content}</p>
-            {selectedItem.aiSummary && <div><p className="text-xs text-muted-foreground mb-0.5">AI 摘要</p><p className="text-xs whitespace-pre-wrap leading-relaxed">{selectedItem.aiSummary}</p></div>}
-            {selectedItem.sourceUrl && <div><p className="text-xs text-muted-foreground mb-0.5">来源链接</p><a href={selectedItem.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all text-xs">{selectedItem.sourceUrl}</a></div>}
-            <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-              <div><span className="block mb-0.5">来源</span><span>{selectedItem.source === "manual" ? "手动" : selectedItem.source === "feishu-bot" ? "飞书机器人" : "飞书导入"}</span></div>
-              {selectedItem.routeTarget && <div><span className="block mb-0.5">入库目标</span><span>{selectedItem.routeTarget}</span></div>}
-              {selectedItem.routedTo && <div><span className="block mb-0.5">已入库至</span><span>{selectedItem.routedTo}</span></div>}
-              {selectedItem.collectedAt && <div><span className="block mb-0.5">采集时间</span><span>{selectedItem.collectedAt}</span></div>}
+            <div className="border-t border-border/30 pt-4 space-y-3">
+              <FieldRow label="内容" value={selectedItem.content} block />
+              <FieldRow label="AI 摘要" value={selectedItem.aiSummary} block />
+              <FieldRow label="来源链接" value={selectedItem.sourceUrl} link />
             </div>
-            {(() => { try { const urls = JSON.parse(selectedItem.imageUrls) as string[]; if (urls.length > 0) return <div><p className="text-xs text-muted-foreground mb-1">附件 ({urls.length})</p><div className="flex gap-2 flex-wrap">{urls.map((u: string) => <a key={u} href={u} target="_blank" rel="noopener noreferrer" className="w-20 h-20 rounded-lg border border-border/50 overflow-hidden bg-muted/20 hover:border-primary/40 transition-colors"><img src={u} alt="" className="w-full h-full object-cover" /></a>)}</div></div>; } catch { return null; } })()}
-            <p className="text-xs text-muted-foreground">创建于 {safeDate(selectedItem.createdAt, "datetime")}</p>
+            <div className="border-t border-border/30 pt-4 space-y-3">
+              <div className="grid grid-cols-2 gap-4">
+                <FieldRow label="来源" value={selectedItem.source === "manual" ? "手动" : selectedItem.source === "feishu-bot" ? "飞书机器人" : "飞书导入"} />
+                <FieldRow label="入库目标" value={selectedItem.routeTarget} />
+                <FieldRow label="已入库至" value={selectedItem.routedTo} />
+                <FieldRow label="采集时间" value={selectedItem.collectedAt} />
+              </div>
+            </div>
+            {(() => { try { const urls = JSON.parse(selectedItem.imageUrls) as string[]; if (urls.length > 0) return <div className="border-t border-border/30 pt-4"><p className="text-[11px] text-muted-foreground/60 mb-2 uppercase tracking-wider font-medium">附件 ({urls.length})</p><div className="flex gap-2 flex-wrap">{urls.map((u: string) => <a key={u} href={u} target="_blank" rel="noopener noreferrer" className="w-20 h-20 rounded-lg border border-border/50 overflow-hidden bg-muted/20 hover:border-primary/40 transition-colors"><img src={u} alt="" className="w-full h-full object-cover" /></a>)}</div></div>; } catch { return null; } })()}
+            <div className="border-t border-border/30 pt-4">
+              <FieldRow label="创建时间" value={selectedItem.createdAt} date />
+            </div>
           </div>
         )}
       </DetailSheet>

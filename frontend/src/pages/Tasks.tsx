@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { DataTable } from "@/components/shared/DataTable";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DetailSheet } from "@/components/shared/DetailSheet";
+import { FieldRow } from "@/components/shared/FieldRow";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -141,13 +142,19 @@ export default function TasksPage() {
         onDelete={() => { if (selected) deleteMutation.mutate(selected.id); }}
       >
         {selected && (
-          <div className="space-y-3 text-sm">
-            <div><p className="text-xs text-muted-foreground mb-0.5">标题</p><p className="text-sm font-medium">{selected.title}</p></div>
-            <div><p className="text-xs text-muted-foreground mb-0.5">状态</p><Badge variant="secondary" className={`text-xs ${statusColors[normalizeStatus(selected.status)] || ""}`}>{statusLabels[normalizeStatus(selected.status)] || selected.status}</Badge></div>
-            {selected.description && <div><p className="text-xs text-muted-foreground mb-0.5">描述</p><p className="text-xs whitespace-pre-wrap leading-relaxed">{selected.description}</p></div>}
-            {selected.action && <div><p className="text-xs text-muted-foreground mb-0.5">行动</p><p className="text-xs">{selected.action}</p></div>}
-            {selected.tags && <div><p className="text-xs text-muted-foreground mb-0.5">标签</p><p className="text-xs">{selected.tags}</p></div>}
-            <div><p className="text-xs text-muted-foreground mb-0.5">创建时间</p><p className="text-xs">{safeDate(selected.createdAt, "datetime")}</p></div>
+          <div className="space-y-5">
+            <div className="space-y-3">
+              <FieldRow label="标题" value={selected.title} />
+              <FieldRow label="状态" value={statusLabels[normalizeStatus(selected.status)] || selected.status} badge badgeClass={statusColors[normalizeStatus(selected.status)] || ""} />
+            </div>
+            <div className="border-t border-border/30 pt-4 space-y-3">
+              <FieldRow label="描述" value={selected.description} block />
+              <FieldRow label="行动" value={selected.action} block />
+            </div>
+            <div className="border-t border-border/30 pt-4 space-y-3">
+              <FieldRow label="标签" value={selected.tags} tags />
+              <FieldRow label="创建时间" value={selected.createdAt} date />
+            </div>
           </div>
         )}
       </DetailSheet>

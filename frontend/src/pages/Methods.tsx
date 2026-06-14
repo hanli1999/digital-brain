@@ -5,6 +5,7 @@ import { DataTable } from "@/components/shared/DataTable";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { FilterPanel } from "@/components/shared/FilterPanel";
 import { DetailSheet } from "@/components/shared/DetailSheet";
+import { FieldRow } from "@/components/shared/FieldRow";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -106,16 +107,22 @@ export default function MethodsPage() {
         onDelete={() => { if (selected) deleteMutation.mutate(selected.id); }}
       >
         {selected && (
-          <div className="space-y-3 text-sm">
-            <div><p className="text-xs text-muted-foreground mb-0.5">标题</p><p className="text-sm font-medium">{toStr(selected.title)}</p></div>
-            {toStr(selected.type) && <div><p className="text-xs text-muted-foreground mb-0.5">类型</p><Badge variant="secondary" className="text-xs">{toStr(selected.type)}</Badge></div>}
-            {toStr(selected.status) && <div><p className="text-xs text-muted-foreground mb-0.5">状态</p><p className="text-xs">{toStr(selected.status)}</p></div>}
-            {toStr(selected.essence) && <div><p className="text-xs text-muted-foreground mb-0.5">精髓</p><p className="text-xs whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto">{toStr(selected.essence)}</p></div>}
-            {toStr(selected.tags) && <div><p className="text-xs text-muted-foreground mb-0.5">标签</p><p className="text-xs">{toStr(selected.tags)}</p></div>}
-            {toStr(selected.related) && <div><p className="text-xs text-muted-foreground mb-0.5">相关方法</p><p className="text-xs">{toStr(selected.related)}</p></div>}
-            {toStr(selected.storage) && <div><p className="text-xs text-muted-foreground mb-0.5">存储位置</p><p className="text-xs">{toStr(selected.storage)}</p></div>}
-            {toStr(selected.learnedDate) && <div><p className="text-xs text-muted-foreground mb-0.5">学习日期</p><p className="text-xs">{toStr(selected.learnedDate)}</p></div>}
-            <div><p className="text-xs text-muted-foreground mb-0.5">创建时间</p><p className="text-xs">{safeDate(selected.createdAt, "datetime")}</p></div>
+          <div className="space-y-5">
+            <div className="space-y-3">
+              <FieldRow label="标题" value={toStr(selected.title)} />
+              <FieldRow label="类型" value={toStr(selected.type)} badge />
+              <FieldRow label="状态" value={toStr(selected.status)} />
+            </div>
+            <div className="border-t border-border/30 pt-4 space-y-3">
+              <FieldRow label="精髓" value={toStr(selected.essence)} block />
+            </div>
+            <div className="border-t border-border/30 pt-4 space-y-3">
+              <FieldRow label="标签" value={toStr(selected.tags)} tags />
+              <FieldRow label="相关方法" value={toStr(selected.related)} />
+              <FieldRow label="存储位置" value={toStr(selected.storage)} />
+              <FieldRow label="学习日期" value={toStr(selected.learnedDate)} />
+              <FieldRow label="创建时间" value={selected.createdAt} date />
+            </div>
           </div>
         )}
       </DetailSheet>

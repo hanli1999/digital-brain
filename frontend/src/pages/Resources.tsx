@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { DataTable } from "@/components/shared/DataTable";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DetailSheet } from "@/components/shared/DetailSheet";
+import { FieldRow } from "@/components/shared/FieldRow";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -100,14 +101,20 @@ export default function ResourcesPage() {
         onDelete={() => { if (selected) deleteMutation.mutate(selected.id); }}
       >
         {selected && (
-          <div className="space-y-3 text-sm">
-            <div><p className="text-xs text-muted-foreground mb-0.5">名称</p><p className="text-sm font-medium">{toStr(selected.name)}</p></div>
-            {toStr(selected.url) && <div><p className="text-xs text-muted-foreground mb-0.5">链接</p><a href={toStr(selected.url)} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all text-xs">{toStr(selected.url)}</a></div>}
-            {toStr(selected.type) && <div><p className="text-xs text-muted-foreground mb-0.5">类型</p><Badge variant="secondary" className="text-xs">{toStr(selected.type)}</Badge></div>}
-            {toStr(selected.stock) && <div><p className="text-xs text-muted-foreground mb-0.5">存量</p><p className="text-xs">{toStr(selected.stock)}</p></div>}
-            {toStr(selected.status) && <div><p className="text-xs text-muted-foreground mb-0.5">状态</p><p className="text-xs">{toStr(selected.status)}</p></div>}
-            {toStr(selected.detail) && <div><p className="text-xs text-muted-foreground mb-0.5">详情</p><p className="text-xs whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto">{toStr(selected.detail)}</p></div>}
-            <div><p className="text-xs text-muted-foreground mb-0.5">创建时间</p><p className="text-xs">{safeDate(selected.createdAt, "datetime")}</p></div>
+          <div className="space-y-5">
+            <div className="space-y-3">
+              <FieldRow label="名称" value={toStr(selected.name)} />
+              <FieldRow label="链接" value={toStr(selected.url)} link />
+              <FieldRow label="类型" value={toStr(selected.type)} badge />
+            </div>
+            <div className="border-t border-border/30 pt-4 space-y-3">
+              <FieldRow label="存量" value={toStr(selected.stock)} />
+              <FieldRow label="状态" value={toStr(selected.status)} />
+              <FieldRow label="详情" value={toStr(selected.detail)} block />
+            </div>
+            <div className="border-t border-border/30 pt-4 space-y-3">
+              <FieldRow label="创建时间" value={selected.createdAt} date />
+            </div>
           </div>
         )}
       </DetailSheet>

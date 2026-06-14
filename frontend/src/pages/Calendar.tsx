@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { DataTable } from "@/components/shared/DataTable";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DetailSheet } from "@/components/shared/DetailSheet";
+import { FieldRow } from "@/components/shared/FieldRow";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -149,19 +150,25 @@ export default function CalendarPage() {
         onDelete={() => { if (selected) deleteMutation.mutate(selected.id); }}
       >
         {selected && (
-          <div className="space-y-3 text-sm">
-            <div><p className="text-xs text-muted-foreground mb-0.5">标题</p><p className="text-sm font-medium">{toStr(selected.title)}</p></div>
-            {toStr(selected.content) && <div><p className="text-xs text-muted-foreground mb-0.5">内容</p><p className="text-xs whitespace-pre-wrap leading-relaxed">{toStr(selected.content)}</p></div>}
-            {toStr(selected.description) && <div><p className="text-xs text-muted-foreground mb-0.5">描述</p><p className="text-xs">{toStr(selected.description)}</p></div>}
-            <div className="grid grid-cols-2 gap-2">
-              {selected.startTime && <div><p className="text-xs text-muted-foreground mb-0.5">开始</p><p className="text-xs">{new Date(selected.startTime).toLocaleString("zh-CN")}</p></div>}
-              {selected.endTime && <div><p className="text-xs text-muted-foreground mb-0.5">结束</p><p className="text-xs">{new Date(selected.endTime).toLocaleString("zh-CN")}</p></div>}
+          <div className="space-y-5">
+            <div className="space-y-3">
+              <FieldRow label="标题" value={toStr(selected.title)} />
+              <FieldRow label="内容" value={toStr(selected.content)} block />
+              <FieldRow label="描述" value={toStr(selected.description)} />
             </div>
-            {selected.allDay === "true" && <div><Badge variant="secondary" className="text-xs">全天</Badge></div>}
-            {toStr(selected.priority) && <div><p className="text-xs text-muted-foreground mb-0.5">优先级</p><p className="text-xs">{toStr(selected.priority)}</p></div>}
-            {toStr(selected.status) && <div><p className="text-xs text-muted-foreground mb-0.5">状态</p><p className="text-xs">{toStr(selected.status)}</p></div>}
-            {toStr(selected.projectId) && <div><p className="text-xs text-muted-foreground mb-0.5">项目</p><p className="text-xs">{toStr(selected.projectId)}</p></div>}
-            <div><p className="text-xs text-muted-foreground mb-0.5">创建时间</p><p className="text-xs">{safeDate(selected.createdAt, "datetime")}</p></div>
+            <div className="border-t border-border/30 pt-4 space-y-3">
+              <div className="grid grid-cols-2 gap-4">
+                <FieldRow label="开始时间" value={selected.startTime} date />
+                <FieldRow label="结束时间" value={selected.endTime} date />
+              </div>
+              {selected.allDay === "true" && <FieldRow label="全天" value="是" badge />}
+              <FieldRow label="优先级" value={toStr(selected.priority)} />
+              <FieldRow label="状态" value={toStr(selected.status)} />
+              <FieldRow label="项目" value={toStr(selected.projectId)} />
+            </div>
+            <div className="border-t border-border/30 pt-4 space-y-3">
+              <FieldRow label="创建时间" value={selected.createdAt} date />
+            </div>
           </div>
         )}
       </DetailSheet>

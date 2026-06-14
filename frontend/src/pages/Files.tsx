@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { DataTable } from "@/components/shared/DataTable";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DetailSheet } from "@/components/shared/DetailSheet";
+import { FieldRow } from "@/components/shared/FieldRow";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -96,15 +97,23 @@ export default function FilesPage() {
         onDelete={() => { if (selected) deleteMutation.mutate(selected.id); }}
       >
         {selected && (
-          <div className="space-y-3 text-sm">
-            <div><p className="text-xs text-muted-foreground mb-0.5">文件名</p><p className="text-sm font-medium">{toStr(selected.filename) || "-"}</p></div>
-            {toStr(selected.text) && <div><p className="text-xs text-muted-foreground mb-0.5">文本</p><p className="text-xs whitespace-pre-wrap leading-relaxed">{toStr(selected.text)}</p></div>}
-            {toStr(selected.date) && <div><p className="text-xs text-muted-foreground mb-0.5">日期</p><p className="text-xs">{toStr(selected.date)}</p></div>}
-            {toStr(selected.url) && <div><p className="text-xs text-muted-foreground mb-0.5">链接</p><a href={toStr(selected.url)} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all text-xs">{toStr(selected.url)}</a></div>}
-            {toStr(selected.attachment) && <div><p className="text-xs text-muted-foreground mb-0.5">附件</p><p className="text-xs break-all">{toStr(selected.attachment)}</p></div>}
-            {selected.mimeType && <div><p className="text-xs text-muted-foreground mb-0.5">类型</p><p className="text-xs">{toStr(selected.mimeType)}</p></div>}
-            {selected.size != null && <div><p className="text-xs text-muted-foreground mb-0.5">大小</p><p className="text-xs">{formatSize(selected.size)}</p></div>}
-            <div><p className="text-xs text-muted-foreground mb-0.5">上传时间</p><p className="text-xs">{safeDate(selected.createdAt, "datetime")}</p></div>
+          <div className="space-y-5">
+            <div className="space-y-3">
+              <FieldRow label="文件名" value={toStr(selected.filename)} />
+              <FieldRow label="文本" value={toStr(selected.text)} block />
+              <FieldRow label="链接" value={toStr(selected.url)} link />
+              <FieldRow label="附件" value={toStr(selected.attachment)} />
+            </div>
+            <div className="border-t border-border/30 pt-4 space-y-3">
+              <div className="grid grid-cols-3 gap-4">
+                <FieldRow label="类型" value={toStr(selected.mimeType)} />
+                <FieldRow label="大小" value={selected.size != null ? formatSize(selected.size) : ""} />
+                <FieldRow label="日期" value={toStr(selected.date)} />
+              </div>
+            </div>
+            <div className="border-t border-border/30 pt-4 space-y-3">
+              <FieldRow label="上传时间" value={selected.createdAt} date />
+            </div>
           </div>
         )}
       </DetailSheet>

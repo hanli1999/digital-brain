@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { DataTable } from "@/components/shared/DataTable";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DetailSheet } from "@/components/shared/DetailSheet";
+import { FieldRow } from "@/components/shared/FieldRow";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -115,17 +116,25 @@ export default function AiEnginePage() {
         onDelete={() => { if (selected) deleteMutation.mutate(selected.id); }}
       >
         {selected && (
-          <div className="space-y-3 text-sm">
-            <div><p className="text-xs text-muted-foreground mb-0.5">名称</p><p className="text-sm font-medium">{toStr(selected.name)}</p></div>
-            {toStr(selected.component) && <div><p className="text-xs text-muted-foreground mb-0.5">组件</p><Badge variant="secondary" className="text-xs">{toStr(selected.component)}</Badge></div>}
-            {toStr(selected.coreIdea) && <div><p className="text-xs text-muted-foreground mb-0.5">核心思路</p><p className="text-xs whitespace-pre-wrap leading-relaxed">{toStr(selected.coreIdea)}</p></div>}
-            {toStr(selected.features) && <div><p className="text-xs text-muted-foreground mb-0.5">功能特性</p><p className="text-xs whitespace-pre-wrap leading-relaxed">{toStr(selected.features)}</p></div>}
-            {toStr(selected.featuresDetail) && <div><p className="text-xs text-muted-foreground mb-0.5">功能详解</p><p className="text-xs whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto">{toStr(selected.featuresDetail)}</p></div>}
-            {toStr(selected.examples) && <div><p className="text-xs text-muted-foreground mb-0.5">示例</p><p className="text-xs whitespace-pre-wrap leading-relaxed">{toStr(selected.examples)}</p></div>}
-            {toStr(selected.scenarios) && <div><p className="text-xs text-muted-foreground mb-0.5">适用场景</p><p className="text-xs whitespace-pre-wrap leading-relaxed">{toStr(selected.scenarios)}</p></div>}
-            {toStr(selected.scenariosDetail) && <div><p className="text-xs text-muted-foreground mb-0.5">场景详解</p><p className="text-xs whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto">{toStr(selected.scenariosDetail)}</p></div>}
-            {toStr(selected.source) && <div><p className="text-xs text-muted-foreground mb-0.5">来源</p><p className="text-xs">{toStr(selected.source)}</p></div>}
-            <div><p className="text-xs text-muted-foreground mb-0.5">创建时间</p><p className="text-xs">{safeDate(selected.createdAt, "datetime")}</p></div>
+          <div className="space-y-5">
+            <div className="space-y-3">
+              <FieldRow label="名称" value={toStr(selected.name)} />
+              <FieldRow label="组件" value={toStr(selected.component)} badge />
+              <FieldRow label="来源" value={toStr(selected.source)} />
+            </div>
+            <div className="border-t border-border/30 pt-4 space-y-3">
+              <FieldRow label="核心思路" value={toStr(selected.coreIdea)} block />
+              <FieldRow label="功能特性" value={toStr(selected.features)} block />
+              <FieldRow label="功能详解" value={toStr(selected.featuresDetail)} block />
+            </div>
+            <div className="border-t border-border/30 pt-4 space-y-3">
+              <FieldRow label="示例" value={toStr(selected.examples)} block />
+              <FieldRow label="适用场景" value={toStr(selected.scenarios)} block />
+              <FieldRow label="场景详解" value={toStr(selected.scenariosDetail)} block />
+            </div>
+            <div className="border-t border-border/30 pt-4 space-y-3">
+              <FieldRow label="创建时间" value={selected.createdAt} date />
+            </div>
           </div>
         )}
       </DetailSheet>
