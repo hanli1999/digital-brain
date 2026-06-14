@@ -6,4 +6,4 @@ RUN npm ci
 COPY . .
 RUN npx prisma generate && npm run build
 EXPOSE 3001
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss 2>/dev/null; node dist/index.js"]
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss 2>/dev/null; npx tsx src/scripts/backfill-legacy.ts 2>/dev/null; node dist/index.js"]

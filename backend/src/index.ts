@@ -5,6 +5,7 @@ import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { readFileSync } from "node:fs";
 import { authMiddleware } from "./lib/auth-middleware.js";
+import { tenantMiddleware } from "./lib/tenant.js";
 
 import authRoutes from "./routes/auth.js";
 import inboxRoutes from "./routes/inbox.js";
@@ -62,42 +63,42 @@ app.get("/api/status", (c) => c.json({
   timestamp: new Date().toISOString(),
 }));
 
-// 保护路由（需要 JWT）
-app.use("/api/inbox/*", authMiddleware);
+// 保护路由（需要 JWT + 租户隔离）
+app.use("/api/inbox/*", authMiddleware, tenantMiddleware);
 app.route("/api/inbox", inboxRoutes);
-app.use("/api/tasks/*", authMiddleware);
+app.use("/api/tasks/*", authMiddleware, tenantMiddleware);
 app.route("/api/tasks", taskRoutes);
-app.use("/api/tools/*", authMiddleware);
+app.use("/api/tools/*", authMiddleware, tenantMiddleware);
 app.route("/api/tools", toolRoutes);
-app.use("/api/methods/*", authMiddleware);
+app.use("/api/methods/*", authMiddleware, tenantMiddleware);
 app.route("/api/methods", methodRoutes);
-app.use("/api/library/*", authMiddleware);
+app.use("/api/library/*", authMiddleware, tenantMiddleware);
 app.route("/api/library", libraryRoutes);
-app.use("/api/resources/*", authMiddleware);
+app.use("/api/resources/*", authMiddleware, tenantMiddleware);
 app.route("/api/resources", resourcesRoutes);
-app.use("/api/metrics/*", authMiddleware);
+app.use("/api/metrics/*", authMiddleware, tenantMiddleware);
 app.route("/api/metrics", resourcesRoutes);
-app.use("/api/files/*", authMiddleware);
+app.use("/api/files/*", authMiddleware, tenantMiddleware);
 app.route("/api/files", fileRoutes);
-app.use("/api/calendar/*", authMiddleware);
+app.use("/api/calendar/*", authMiddleware, tenantMiddleware);
 app.route("/api/calendar", calendarRoutes);
-app.use("/api/ai-engine/*", authMiddleware);
+app.use("/api/ai-engine/*", authMiddleware, tenantMiddleware);
 app.route("/api/ai-engine", aiEngineRoutes);
-app.use("/api/ai/*", authMiddleware);
+app.use("/api/ai/*", authMiddleware, tenantMiddleware);
 app.route("/api/ai", aiRoutes);
-app.use("/api/search/*", authMiddleware);
+app.use("/api/search/*", authMiddleware, tenantMiddleware);
 app.route("/api/search", searchRoutes);
-app.use("/api/settings/*", authMiddleware);
+app.use("/api/settings/*", authMiddleware, tenantMiddleware);
 app.route("/api/settings", settingsRoutes);
-app.use("/api/sync/*", authMiddleware);
+app.use("/api/sync/*", authMiddleware, tenantMiddleware);
 app.route("/api/sync", syncRoutes);
-app.use("/api/insight/*", authMiddleware);
+app.use("/api/insight/*", authMiddleware, tenantMiddleware);
 app.route("/api/insight", insightRoutes);
-app.use("/api/dashboard/*", authMiddleware);
+app.use("/api/dashboard/*", authMiddleware, tenantMiddleware);
 app.route("/api/dashboard", dashboardRoutes);
-app.use("/api/jiyuanlu/*", authMiddleware);
+app.use("/api/jiyuanlu/*", authMiddleware, tenantMiddleware);
 app.route("/api/jiyuanlu", jiyuanluRoutes);
-app.use("/api/webhook/*", authMiddleware);
+app.use("/api/webhook/*", authMiddleware, tenantMiddleware);
 app.route("/api/webhook", webhookRoutes);
 
 // 静态文件服务 — 前端产物（生产模式）

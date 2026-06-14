@@ -1,6 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "./prisma.js";
 
 type ModelName = "tool" | "inboxItem" | "task" | "method" | "document" | "aiMechanism" | "resource" | "fileAsset" | "calendarEvent" | "jiyuanlu";
 

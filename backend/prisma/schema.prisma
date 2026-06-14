@@ -7,8 +7,32 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id           String       @id @default(cuid())
+  username     String       @unique @default("")
+  passwordHash String       @default("")
+  avatar       String       @default("")
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  inboxItems   InboxItem[]
+  tools        Tool[]
+  tasks        Task[]
+  methods      Method[]
+  documents    Document[]
+  aiMechanisms AiMechanism[]
+  resources    Resource[]
+  files        FileAsset[]
+  events       CalendarEvent[]
+  jiyuanlu     Jiyuanlu[]
+  metrics      Metric[]
+  searchIndex  SearchIndex[]
+  insights     Insight[]
+}
+
 model InboxItem {
   id          String   @id @default(cuid())
+  userId      String   @default("legacy")
+  user        User     @relation(fields: [userId], references: [id])
   title       String
   content     String   @default("")
   source      String   @default("manual")
@@ -29,6 +53,8 @@ model InboxItem {
 
 model Task {
   id          String   @id @default(cuid())
+  userId      String   @default("legacy")
+  user        User     @relation(fields: [userId], references: [id])
   title       String
   description String   @default("")
   status      String   @default("todo")
@@ -41,6 +67,8 @@ model Task {
 
 model Tool {
   id          String   @id @default(cuid())
+  userId      String   @default("legacy")
+  user        User     @relation(fields: [userId], references: [id])
   name        String
   category    String   @default("")
   description String   @default("")
@@ -56,22 +84,26 @@ model Tool {
 }
 
 model Method {
-  id        String   @id @default(cuid())
-  title     String
-  essence   String   @default("")
-  status    String   @default("")
-  type      String   @default("")
-  learnedDate String @default("")
-  storage   String   @default("")
-  related   String   @default("")
-  tags      String   @default("[]")
-  feishuId  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  userId      String   @default("legacy")
+  user        User     @relation(fields: [userId], references: [id])
+  title       String
+  essence     String   @default("")
+  status      String   @default("")
+  type        String   @default("")
+  learnedDate String   @default("")
+  storage     String   @default("")
+  related     String   @default("")
+  tags        String   @default("[]")
+  feishuId    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Document {
   id          String   @id @default(cuid())
+  userId      String   @default("legacy")
+  user        User     @relation(fields: [userId], references: [id])
   title       String
   author      String   @default("")
   abstract    String   @default("")
@@ -89,24 +121,28 @@ model Document {
 }
 
 model AiMechanism {
-  id               String   @id @default(cuid())
-  name             String
-  component        String   @default("")
-  coreIdea         String   @default("")
-  features         String   @default("")
-  featuresDetail   String   @default("")
-  examples         String   @default("")
-  scenarios        String   @default("")
-  scenariosDetail  String   @default("")
-  source           String   @default("")
-  tags             String   @default("[]")
-  feishuId         String?
+  id              String   @id @default(cuid())
+  userId          String   @default("legacy")
+  user            User     @relation(fields: [userId], references: [id])
+  name            String
+  component       String   @default("")
+  coreIdea        String   @default("")
+  features        String   @default("")
+  featuresDetail  String   @default("")
+  examples        String   @default("")
+  scenarios       String   @default("")
+  scenariosDetail String   @default("")
+  source          String   @default("")
+  tags            String   @default("[]")
+  feishuId        String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }
 
 model Resource {
   id        String   @id @default(cuid())
+  userId    String   @default("legacy")
+  user      User     @relation(fields: [userId], references: [id])
   name      String
   url       String   @default("")
   type      String   @default("")
@@ -121,6 +157,8 @@ model Resource {
 
 model FileAsset {
   id         String   @id @default(cuid())
+  userId     String   @default("legacy")
+  user       User     @relation(fields: [userId], references: [id])
   filename   String
   text       String   @default("")
   date       String   @default("")
@@ -136,6 +174,8 @@ model FileAsset {
 
 model CalendarEvent {
   id          String   @id @default(cuid())
+  userId      String   @default("legacy")
+  user        User     @relation(fields: [userId], references: [id])
   title       String
   description String   @default("")
   content     String   @default("")
@@ -152,22 +192,26 @@ model CalendarEvent {
 }
 
 model Jiyuanlu {
-  id              String   @id @default(cuid())
-  detail          String
-  description     String   @default("")
-  status          String   @default("")
-  action          String   @default("")
-  tags            String   @default("[]")
-  relatedMethod   String   @default("")
-  actionLog       String   @default("")
-  recordId        String   @default("")
-  feishuId        String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id            String   @id @default(cuid())
+  userId        String   @default("legacy")
+  user          User     @relation(fields: [userId], references: [id])
+  detail        String
+  description   String   @default("")
+  status        String   @default("")
+  action        String   @default("")
+  tags          String   @default("[]")
+  relatedMethod String   @default("")
+  actionLog     String   @default("")
+  recordId      String   @default("")
+  feishuId      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Metric {
   id        String   @id @default(cuid())
+  userId    String   @default("legacy")
+  user      User     @relation(fields: [userId], references: [id])
   name      String
   value     Float    @default(0)
   unit      String   @default("")
@@ -180,6 +224,8 @@ model Metric {
 
 model SearchIndex {
   id         String   @id @default(cuid())
+  userId     String   @default("legacy")
+  user       User     @relation(fields: [userId], references: [id])
   entityType String
   entityId   String
   title      String
@@ -191,13 +237,18 @@ model SearchIndex {
   @@unique([entityType, entityId])
 }
 
-model User {
-  id           String   @id @default(cuid())
-  username     String   @unique @default("")
-  passwordHash String   @default("")
-  avatar       String   @default("")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+model Insight {
+  id        String   @id @default(cuid())
+  userId    String   @default("legacy")
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  content   String   @default("")
+  category  String   @default("")
+  source    String   @default("")
+  tags      String   @default("[]")
+  feishuId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Settings {
@@ -215,18 +266,6 @@ model FeishuSyncLog {
   status    String
   detail    String   @default("")
   createdAt DateTime @default(now())
-}
-
-model Insight {
-  id        String   @id @default(cuid())
-  title     String
-  content   String   @default("")
-  category  String   @default("")
-  source    String   @default("")
-  tags      String   @default("[]")
-  feishuId  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model AuditLog {
