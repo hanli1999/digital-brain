@@ -107,7 +107,7 @@ const tables: Record<string, TableConfig> = {
       name: "name",
       coreIdea: "coreIdea",
       featuresDetail: "featuresDetail",
-      scenariosDetail: "scenariosDetail",
+      rawContent: "rawContent",
     },
     skipFields: ["id", "feishuId", "createdAt", "updatedAt", "component", "features", "examples", "scenarios", "source", "tags", "type", "content", "parameters"],
   },
@@ -433,7 +433,7 @@ async function upsertLocalRecord(tableKey: string, feishuId: string, fields: Rec
       await prisma.aiMechanism.upsert({
         where: { id: feishuId },
         update: { ...base, id: undefined },
-        create: { id: feishuId, name: (fields.name as string) || "", coreIdea: (fields.coreIdea as string) || "", featuresDetail: (fields.featuresDetail as string) || "", scenariosDetail: (fields.scenariosDetail as string) || "", component: "", features: "", examples: "", scenarios: "", source: "", tags: "[]", feishuId },
+        create: { id: feishuId, name: (fields.name as string) || "", coreIdea: (fields.coreIdea as string) || "", featuresDetail: (fields.featuresDetail as string) || "", scenariosDetail: (fields.scenariosDetail as string) || "", rawContent: (fields.rawContent as string) || "", component: "", features: "", examples: "", scenarios: "", source: "", tags: "[]", feishuId },
       });
       break;
     case "library":

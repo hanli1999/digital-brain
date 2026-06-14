@@ -72,6 +72,7 @@ app.post("/", async (c) => {
   if (body.aiSummary) input.aiSummary = body.aiSummary;
   if (body.collectedAt) input.collectedAt = body.collectedAt;
   if (body.imageUrls) input.imageUrls = body.imageUrls;
+  if (body.attachment) input.attachment = body.attachment;
 
   const record = await createRecord(TABLE, input);
   if (!record) return c.json({ error: "Failed to create" }, 500);
@@ -106,6 +107,7 @@ app.put("/:id", async (c) => {
   if (body.aiSummary !== undefined) input.aiSummary = body.aiSummary;
   if (body.collectedAt !== undefined) input.collectedAt = body.collectedAt;
   if (body.imageUrls !== undefined) input.imageUrls = body.imageUrls;
+  if (body.attachment !== undefined) input.attachment = body.attachment;
 
   const record = await updateRecord(TABLE, c.req.param("id"), input);
   if (!record) return c.json({ error: "Not found" }, 404);

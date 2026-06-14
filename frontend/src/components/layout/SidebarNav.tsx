@@ -43,6 +43,7 @@ const moreItems: NavItem[] = [
   { href: "/calendar", label: "任务清单", icon: <CalendarLine /> },
   { href: "/resources", label: "资源管理", icon: <DiamondLine /> },
   { href: "/insight", label: "洞察", icon: <BulbLine /> },
+  { href: "/jiyuanlu", label: "机缘录", icon: <BookmarkLine /> },
 ];
 
 function IconContainer({ children, active }: { children: React.ReactNode; active: boolean }) {

@@ -13,7 +13,7 @@ interface DetailSheetProps {
   title: string;
   children: React.ReactNode;
   onDelete?: () => void;
-  editFields?: { key: string; label: string; value: string; type?: "text" | "textarea" }[];
+  editFields?: { key: string; label: string; value: string; type?: "text" | "textarea" | "number" | "date" }[];
   onSave?: (data: Record<string, string>) => void;
 }
 
@@ -76,6 +76,18 @@ export function DetailSheet({ open, onOpenChange, title, children, onDelete, edi
                 {f.type === "textarea" ? (
                   <Textarea
                     className="min-h-[100px] resize-y"
+                    value={values[f.key] || ""}
+                    onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
+                  />
+                ) : f.type === "number" ? (
+                  <Input
+                    type="number"
+                    value={values[f.key] || ""}
+                    onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
+                  />
+                ) : f.type === "date" ? (
+                  <Input
+                    type="date"
                     value={values[f.key] || ""}
                     onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
                   />

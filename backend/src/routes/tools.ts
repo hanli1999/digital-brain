@@ -22,6 +22,7 @@ app.post("/", async (c) => {
   if (body.initScript) input.initScript = body.initScript;
   if (body.rating) input.rating = body.rating;
   if (body.record) input.record = body.record;
+  if (body.relatedResource) input.relatedResource = body.relatedResource;
 
   const record = await createRecord(TABLE, input);
   if (!record) return c.json({ error: "Failed to create" }, 500);
@@ -46,6 +47,7 @@ app.put("/:id", async (c) => {
   if (body.initScript !== undefined) input.initScript = body.initScript;
   if (body.rating !== undefined) input.rating = body.rating;
   if (body.record !== undefined) input.record = body.record;
+  if (body.relatedResource !== undefined) input.relatedResource = body.relatedResource;
 
   const record = await updateRecord(TABLE, c.req.param("id"), input);
   if (!record) return c.json({ error: "Not found" }, 404);

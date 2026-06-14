@@ -22,6 +22,13 @@ app.post("/", async (c) => {
   if (body.endTime) input.endTime = body.endTime;
   if (body.allDay !== undefined) input.allDay = body.allDay;
   if (body.projectId) input.projectId = body.projectId;
+  if (body.taskId) input.taskId = body.taskId;
+  if (body.timezone) input.timezone = body.timezone;
+  if (body.repeatFlag) input.repeatFlag = body.repeatFlag;
+  if (body.reminder) input.reminder = body.reminder;
+  if (body.completedAt) input.completedAt = body.completedAt;
+  if (body.sort !== undefined) input.sort = body.sort;
+  if (body.subtasks) input.subtasks = body.subtasks;
   if (body.tags) input.tags = body.tags;
 
   const record = await createRecord(TABLE, input);
@@ -47,6 +54,13 @@ app.put("/:id", async (c) => {
   if (body.endTime !== undefined) input.endTime = body.endTime;
   if (body.allDay !== undefined) input.allDay = body.allDay;
   if (body.projectId !== undefined) input.projectId = body.projectId;
+  if (body.taskId !== undefined) input.taskId = body.taskId;
+  if (body.timezone !== undefined) input.timezone = body.timezone;
+  if (body.repeatFlag !== undefined) input.repeatFlag = body.repeatFlag;
+  if (body.reminder !== undefined) input.reminder = body.reminder;
+  if (body.completedAt !== undefined) input.completedAt = body.completedAt;
+  if (body.sort !== undefined) input.sort = body.sort;
+  if (body.subtasks !== undefined) input.subtasks = body.subtasks;
   if (body.tags !== undefined) input.tags = body.tags;
 
   const record = await updateRecord(TABLE, c.req.param("id"), input);

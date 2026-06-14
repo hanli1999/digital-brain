@@ -4,12 +4,13 @@ import { toast } from "sonner";
 import { DataTable } from "@/components/shared/DataTable";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DetailSheet } from "@/components/shared/DetailSheet";
+import { FieldRow } from "@/components/shared/FieldRow";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { apiFetch } from "@/config/api";
-import { safeDate } from "@/lib/utils";
+import { safeDate, toStr } from "@/lib/utils";
 import type { Insight } from "@/types/api";
 
 export default function InsightPage() {
@@ -30,6 +31,12 @@ export default function InsightPage() {
     mutationFn: (data: { title: string; content: string; category: string; source: string }) =>
       apiFetch(`/insight`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["insight"] }); setShowNew(false); setTitle(""); setContent(""); setCategory(""); setSource(""); toast.success("已添加洞察"); },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, ...data }: { id: string } & Record<string, string>) =>
+      apiFetch(`/insight/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["insight"] }); setSelectedId(null); toast.success("已更新"); },
   });
 
   const deleteMutation = useMutation({
@@ -74,15 +81,30 @@ export default function InsightPage() {
         />
       )}
 
-      <DetailSheet open={!!selected} onOpenChange={() => setSelectedId(null)} title={selected?.title || "详情"}>
+      <DetailSheet open={!!selected} onOpenChange={() => setSelectedId(null)} title={selected?.title || "详情"}
+        editFields={selected ? [
+          { key: "title", label: "标题", value: selected.title },
+          { key: "content", label: "内容", value: selected.content, type: "textarea" },
+          { key: "category", label: "分类", value: selected.category },
+          { key: "source", label: "来源", value: selected.source },
+          { key: "tags", label: "标签", value: selected.tags },
+        ] : undefined}
+        onSave={(data) => { if (selected) updateMutation.mutate({ id: selected.id, ...data }); }}
+        onDelete={() => { if (selected) deleteMutation.mutate(selected.id); }}
+      >
         {selected && (
-          <div className="space-y-4 text-sm">
+          <div className="space-y-5">
             <div className="flex items-center gap-3">
-              {selected.category && <span className="text-xs bg-muted px-2 py-0.5 rounded-full">{selected.category}</span>}
-              {selected.source && <span className="text-xs text-muted-foreground">来源：{selected.source}</span>}
+              <FieldRow label="分类" value={selected.category} badge />
+              <FieldRow label="来源" value={selected.source} />
             </div>
-            <p className="whitespace-pre-wrap text-muted-foreground leading-relaxed">{selected.content}</p>
-            <p className="text-xs text-muted-foreground">创建于 {safeDate(selected.createdAt, "datetime")}</p>
+            <div className="border-t border-border/30 pt-4">
+              <FieldRow label="内容" value={selected.content} block />
+            </div>
+            <div className="border-t border-border/30 pt-4 space-y-3">
+              <FieldRow label="标签" value={selected.tags} tags />
+              <FieldRow label="创建时间" value={selected.createdAt} date />
+            </div>
           </div>
         )}
       </DetailSheet>

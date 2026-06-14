@@ -36,6 +36,7 @@ model InboxItem {
   title       String
   content     String   @default("")
   source      String   @default("manual")
+  attachment  String   @default("")
   imageUrls   String   @default("[]")
   status      String   @default("pending")
   routeTarget String?
@@ -76,11 +77,12 @@ model Tool {
   corePower   String   @default("")
   initScript  String   @default("")
   rating      String   @default("")
-  record      String   @default("")
-  tags        String   @default("[]")
-  feishuId    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  record          String   @default("")
+  relatedResource String   @default("")
+  tags            String   @default("[]")
+  feishuId        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model Method {
@@ -93,11 +95,14 @@ model Method {
   type        String   @default("")
   learnedDate String   @default("")
   storage     String   @default("")
-  related     String   @default("")
-  tags        String   @default("[]")
-  feishuId    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  related          String   @default("")
+  relatedTools     String   @default("")
+  relatedMaterials String   @default("")
+  relatedInsights  String   @default("")
+  tags             String   @default("[]")
+  feishuId         String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model Document {
@@ -113,11 +118,16 @@ model Document {
   status      String   @default("")
   importance  String   @default("")
   publishedAt String   @default("")
-  snippet     String   @default("")
-  tags        String   @default("[]")
-  feishuId    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  snippet          String   @default("")
+  attachment       String   @default("")
+  ingestedAt       String   @default("")
+  relatedInsights  String   @default("")
+  relatedMethods   String   @default("")
+  relatedResources String   @default("")
+  tags             String   @default("[]")
+  feishuId         String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model AiMechanism {
@@ -133,6 +143,7 @@ model AiMechanism {
   scenarios       String   @default("")
   scenariosDetail String   @default("")
   source          String   @default("")
+  rawContent      String   @default("")
   tags            String   @default("[]")
   feishuId        String?
   createdAt        DateTime @default(now())
@@ -148,11 +159,14 @@ model Resource {
   type      String   @default("")
   stock     String   @default("")
   status    String   @default("")
-  detail    String   @default("")
-  tags      String   @default("[]")
-  feishuId  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  detail          String   @default("")
+  usageLog        String   @default("")
+  usedAt          String   @default("")
+  relatedMethods  String   @default("")
+  tags            String   @default("[]")
+  feishuId        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model FileAsset {
@@ -185,6 +199,13 @@ model CalendarEvent {
   endTime     String   @default("")
   allDay      String   @default("")
   projectId   String   @default("")
+  taskId      String   @default("")
+  timezone    String   @default("")
+  repeatFlag  String   @default("")
+  reminder    String   @default("")
+  completedAt String   @default("")
+  sort        Int      @default(0)
+  subtasks    String   @default("[]")
   tags        String   @default("[]")
   feishuId    String?
   createdAt   DateTime @default(now())

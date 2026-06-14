@@ -20,6 +20,9 @@ app.post("/", async (c) => {
   if (body.learnedDate) input.learnedDate = body.learnedDate;
   if (body.storage) input.storage = body.storage;
   if (body.related) input.related = body.related;
+  if (body.relatedTools) input.relatedTools = body.relatedTools;
+  if (body.relatedMaterials) input.relatedMaterials = body.relatedMaterials;
+  if (body.relatedInsights) input.relatedInsights = body.relatedInsights;
   if (body.tags) input.tags = body.tags;
 
   const record = await createRecord(TABLE, input);
@@ -43,6 +46,9 @@ app.put("/:id", async (c) => {
   if (body.learnedDate !== undefined) input.learnedDate = body.learnedDate;
   if (body.storage !== undefined) input.storage = body.storage;
   if (body.related !== undefined) input.related = body.related;
+  if (body.relatedTools !== undefined) input.relatedTools = body.relatedTools;
+  if (body.relatedMaterials !== undefined) input.relatedMaterials = body.relatedMaterials;
+  if (body.relatedInsights !== undefined) input.relatedInsights = body.relatedInsights;
   if (body.tags !== undefined) input.tags = body.tags;
 
   const record = await updateRecord(TABLE, c.req.param("id"), input);

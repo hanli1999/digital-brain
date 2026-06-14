@@ -22,6 +22,7 @@ app.post("/", async (c) => {
   if (body.scenarios) input.scenarios = body.scenarios;
   if (body.scenariosDetail) input.scenariosDetail = body.scenariosDetail;
   if (body.source) input.source = body.source;
+  if (body.rawContent) input.rawContent = body.rawContent;
   if (body.tags) input.tags = body.tags;
 
   const record = await createRecord(TABLE, input);
@@ -47,6 +48,7 @@ app.put("/:id", async (c) => {
   if (body.scenarios !== undefined) input.scenarios = body.scenarios;
   if (body.scenariosDetail !== undefined) input.scenariosDetail = body.scenariosDetail;
   if (body.source !== undefined) input.source = body.source;
+  if (body.rawContent !== undefined) input.rawContent = body.rawContent;
   if (body.tags !== undefined) input.tags = body.tags;
 
   const record = await updateRecord(TABLE, c.req.param("id"), input);

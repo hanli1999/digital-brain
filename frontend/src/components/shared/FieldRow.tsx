@@ -13,13 +13,15 @@ interface FieldRowProps {
   block?: boolean;
   /** Render as formatted date */
   date?: boolean;
+  /** Render as number (monospace) */
+  numeric?: boolean;
   /** Render tags as badge cluster (value should be JSON string array) */
   tags?: boolean;
   /** Custom badge color class */
   badgeClass?: string;
 }
 
-export function FieldRow({ label, value, link, badge, block, date, tags, badgeClass }: FieldRowProps) {
+export function FieldRow({ label, value, link, badge, block, date, numeric, tags, badgeClass }: FieldRowProps) {
   if (!value && value !== "0") return null;
 
   if (tags) {
@@ -58,6 +60,8 @@ export function FieldRow({ label, value, link, badge, block, date, tags, badgeCl
         <div className="rounded-lg bg-muted/30 border border-border/20 p-3">
           <p className="text-sm whitespace-pre-wrap leading-relaxed">{value}</p>
         </div>
+      ) : numeric ? (
+        <p className="text-sm font-mono tabular-nums">{value}</p>
       ) : (
         <p className="text-sm">{value}</p>
       )}

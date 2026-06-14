@@ -12,6 +12,7 @@ export interface InboxItem {
   aiSummary?: string;
   collectedAt?: string;
   imageUrls: string;
+  attachment?: string;
   createdAt: string;
 }
 
@@ -35,6 +36,7 @@ export interface Tool {
   initScript?: string;
   rating?: string;
   record?: string;
+  relatedResource?: string;
   tags?: string;
   createdAt: string;
 }
@@ -48,6 +50,9 @@ export interface Method {
   learnedDate?: string;
   storage?: string;
   related?: string;
+  relatedTools?: string;
+  relatedMaterials?: string;
+  relatedInsights?: string;
   tags?: string;
   createdAt: string;
 }
@@ -64,6 +69,11 @@ export interface Document {
   importance?: string;
   publishedAt?: string;
   snippet?: string;
+  attachment?: string;
+  ingestedAt?: string;
+  relatedInsights?: string;
+  relatedMethods?: string;
+  relatedResources?: string;
   tags?: string;
   createdAt: string;
 }
@@ -92,6 +102,14 @@ export interface CalendarEvent {
   endTime: string;
   allDay?: string;
   projectId?: string;
+  taskId?: string;
+  timezone?: string;
+  repeatFlag?: string;
+  reminder?: string;
+  completedAt?: string;
+  sort?: number;
+  subtasks?: string;
+  tags?: string;
   createdAt: string;
 }
 
@@ -106,6 +124,7 @@ export interface AiMechanism {
   scenarios?: string;
   scenariosDetail?: string;
   source?: string;
+  rawContent?: string;
   tags?: string;
   createdAt: string;
 }
@@ -118,7 +137,23 @@ export interface Resource {
   stock?: string;
   status?: string;
   detail?: string;
+  usageLog?: string;
+  usedAt?: string;
+  relatedMethods?: string;
   tags?: string;
+  createdAt: string;
+}
+
+export interface Jiyuanlu {
+  id: string;
+  detail: string;
+  description?: string;
+  status?: string;
+  action?: string;
+  tags?: string;
+  relatedMethod?: string;
+  actionLog?: string;
+  recordId?: string;
   createdAt: string;
 }
 

@@ -18,6 +18,7 @@ import Analytics from "@/pages/Analytics";
 import Resources from "@/pages/Resources";
 import AiEngine from "@/pages/AiEngine";
 import Insight from "@/pages/Insight";
+import Jiyuanlu from "@/pages/Jiyuanlu";
 import Search from "@/pages/Search";
 import Settings from "@/pages/Settings";
 import Guide from "@/pages/Guide";
@@ -49,6 +50,7 @@ function AppLayout() {
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/ai-engine" element={<AiEngine />} />
           <Route path="/insight" element={<Insight />} />
+          <Route path="/jiyuanlu" element={<Jiyuanlu />} />
           <Route path="/search" element={<Search />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>

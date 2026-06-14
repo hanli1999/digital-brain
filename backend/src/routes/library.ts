@@ -25,6 +25,11 @@ app.post("/", async (c) => {
   if (body.importance !== undefined) input.importance = body.importance;
   if (body.publishedAt) input.publishedAt = body.publishedAt;
   if (body.snippet) input.snippet = body.snippet;
+  if (body.attachment) input.attachment = body.attachment;
+  if (body.ingestedAt) input.ingestedAt = body.ingestedAt;
+  if (body.relatedInsights) input.relatedInsights = body.relatedInsights;
+  if (body.relatedMethods) input.relatedMethods = body.relatedMethods;
+  if (body.relatedResources) input.relatedResources = body.relatedResources;
   if (body.tags) input.tags = body.tags;
 
   const record = await createRecord(TABLE, input);
@@ -53,6 +58,11 @@ app.put("/:id", async (c) => {
   if (body.importance !== undefined) input.importance = body.importance;
   if (body.publishedAt !== undefined) input.publishedAt = body.publishedAt;
   if (body.snippet !== undefined) input.snippet = body.snippet;
+  if (body.attachment !== undefined) input.attachment = body.attachment;
+  if (body.ingestedAt !== undefined) input.ingestedAt = body.ingestedAt;
+  if (body.relatedInsights !== undefined) input.relatedInsights = body.relatedInsights;
+  if (body.relatedMethods !== undefined) input.relatedMethods = body.relatedMethods;
+  if (body.relatedResources !== undefined) input.relatedResources = body.relatedResources;
   if (body.tags !== undefined) input.tags = body.tags;
 
   const record = await updateRecord(TABLE, c.req.param("id"), input);

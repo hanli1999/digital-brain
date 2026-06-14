@@ -21,6 +21,9 @@ app.post("/", async (c) => {
   if (body.stock !== undefined) input.stock = body.stock;
   if (body.status) input.status = body.status;
   if (body.detail) input.detail = body.detail;
+  if (body.usageLog) input.usageLog = body.usageLog;
+  if (body.usedAt) input.usedAt = body.usedAt;
+  if (body.relatedMethods) input.relatedMethods = body.relatedMethods;
   if (body.tags) input.tags = body.tags;
 
   const record = await createRecord(TABLE, input);
@@ -45,6 +48,9 @@ app.put("/:id", async (c) => {
   if (body.stock !== undefined) input.stock = body.stock;
   if (body.status !== undefined) input.status = body.status;
   if (body.detail !== undefined) input.detail = body.detail;
+  if (body.usageLog !== undefined) input.usageLog = body.usageLog;
+  if (body.usedAt !== undefined) input.usedAt = body.usedAt;
+  if (body.relatedMethods !== undefined) input.relatedMethods = body.relatedMethods;
   if (body.tags !== undefined) input.tags = body.tags;
 
   const record = await updateRecord(TABLE, c.req.param("id"), input);
