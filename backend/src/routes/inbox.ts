@@ -114,7 +114,7 @@ app.put("/:id", async (c) => {
 
 app.delete("/:id", async (c) => {
   const ok = await deleteRecord(TABLE, c.req.param("id"));
-  if (!ok) return c.json({ error: "Delete failed" }, 500);
+  if (!ok) return c.json({ error: "Not found" }, 404);
   return c.json({ ok: true });
 });
 
